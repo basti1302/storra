@@ -1,0 +1,5 @@
+
+
+A simplistic storage server based on [node.js] (http://nodejs.org/) and [nStore](https://github.com/creationix/nstore).
+
+It basically wraps nStore in RESTful http interface.
