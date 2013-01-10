@@ -252,6 +252,8 @@ exports.remove = remove
 
 // 400
 exports.badRequest = badRequest
+// 404
+exports.notFound = notFound
 // 500
 exports.internalServerError = internalServerError
 // 501

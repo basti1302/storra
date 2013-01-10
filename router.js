@@ -40,6 +40,11 @@ function route(request, response) {
     if (collection === undefined) {
       resource = resourceRoutes.root
     } else if (key === undefined) {
+      if (collection === 'favicon.ico') {
+        // reject requests to /favicon.ico
+        requesthandler.notFound(response)
+        return
+      }
       resource = resourceRoutes.collection
     } else {
       resource = resourceRoutes.document
