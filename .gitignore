@@ -4,4 +4,4 @@
 .project
 .settings
 data/*
-!data/*
+!data/audiobooks.db
