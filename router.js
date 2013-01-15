@@ -22,9 +22,8 @@ var resourceRoutes = {
   collection: {
     OPTIONS: requesthandler.options,
     GET: requesthandler.list,
-    POST: requesthandler.create
-    // currently, collections can not be deleted. Can they be deleted (in the filesyste) via nStore?
-    //delete: requesthandler.deleteCollection
+    POST: requesthandler.create,
+    DELETE: requesthandler.removeCollection
   },
   document: {
     OPTIONS: requesthandler.options,

@@ -120,6 +120,19 @@ function list(request, response, collection) {
   })
 }
 
+function removeCollection(request, response, collection) {
+  storage.removeCollection(collection, function(err) {
+    if (err) {
+      log.error(err.stack)
+      internalServerError(response)
+    } else {
+      writeNoContentHeader(response, 204)
+      response.end()
+      log.debug("successfully removed collection " + collection)
+    }        
+  })
+}
+
 function retrieve(request, response, collection, key) {
   storage.read(collection, key, function(err, document, key) {
     if (err) {
@@ -239,6 +252,8 @@ exports.options = options
 
 // GET /collection
 exports.list = list
+// DELETE /collection
+exports.removeCollection = removeCollection
 // GET /collection/key
 exports.retrieve = retrieve
 // POST /collection
