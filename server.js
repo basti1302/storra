@@ -14,8 +14,8 @@ function start() {
     log.debug(request.method + ": " + request.url)
     router.route(request, response)
   }
-  http.createServer(onRequest).listen(global.nstore_rest_server_port)
-  log.info("now listening on port " + global.nstore_rest_server_port + "...")
+  http.createServer(onRequest).listen(global.nstore_rest_server_port, global.nstore_rest_server_bind_address)
+  log.info("now listening on port " + global.nstore_rest_server_port + " (bind address: " + global.nstore_rest_server_bind_address + ")" + "...")
 }
 
 exports.start = start
