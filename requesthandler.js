@@ -77,7 +77,8 @@ function writeJsonHeader(response, status, additionalHeaders) {
   writeContentHeader(response, status, "application/json;charset=UTF-8", additionalHeaders)
 }
 
-function root(request, response) {
+// GET /
+exports.root = function root(request, response) {
   writePlainTextHeader(response, 400)
   response.write("This is the nstore-rest-server. Usage:\n")
   response.write("GET / to display this text,\n")
@@ -89,18 +90,22 @@ function root(request, response) {
   response.end()
 }
 
-function options(request, response) {
+// OPTIONS *
+exports.options = function options(request, response) {
   writeNoContentHeader(response, 200)
   response.end();
   log.debug("responded to OPTIONS request")
 }
 
-function list(request, response, collection) {
+// GET /collection
+exports.list = function list(request, response, collection) {
+  log.info("get/collection start")
   storage.list(collection, function(err, resultObject) {
     if (err) { 
       log.error(err)
       internalServerError(response)
     } else {
+      log.info("get/collection callback")
       writeJsonHeader(response, 200)
       // probably pretty inefficient but somehow I can't get Query using streams to work
       var resultAsArray = []
@@ -113,14 +118,16 @@ function list(request, response, collection) {
 
       // to write complete list as object instead of array
       // response.write(JSON.stringify(results))
-
+     
+      log.info("get/collection resp.end")
       response.end()
       log.debug("successfully listed " + collection)
     }
   })
 }
 
-function removeCollection(request, response, collection) {
+// DELETE /collection
+exports.removeCollection = function removeCollection(request, response, collection) {
   storage.removeCollection(collection, function(err) {
     if (err) {
       log.error(err.stack)
@@ -133,7 +140,8 @@ function removeCollection(request, response, collection) {
   })
 }
 
-function retrieve(request, response, collection, key) {
+// GET /collection/key
+exports.retrieve = function retrieve(request, response, collection, key) {
   storage.read(collection, key, function(err, document, key) {
     if (err) {
       log.debug(err)
@@ -148,7 +156,8 @@ function retrieve(request, response, collection, key) {
   })
 }
 
-function create(request, response, collection) {
+// POST /collection
+exports.create = function create(request, response, collection) {
   createOrUpdate(request, response, function(bodyObject) {
     storage.create(collection, bodyObject, function(err, key) {
       if (err) {
@@ -163,7 +172,8 @@ function create(request, response, collection) {
   })
 }
 
-function update(request, response, collection, key) {
+// PUT /collection/key
+exports.update = function update(request, response, collection, key) {
   createOrUpdate(request, response, function(bodyObject) {
     storage.update(collection, key, bodyObject, function(err) {
       if (err) {
@@ -201,7 +211,8 @@ function createOrUpdate(request, response, upsert) {
   })
 }
 
-function remove(request, response, collection, key) {
+// DELETE /collection/key
+exports.remove = function remove(request, response, collection, key) {
   storage.remove(collection, key, function(err) {
     if (err) {
       log.error(err.stack)
@@ -215,7 +226,8 @@ function remove(request, response, collection, key) {
 }
 
 
-function badRequest(response, info) {
+// 400
+exports.badRequest = function badRequest(response, info) {
   log.info("400 Bad Request")
   writePlainTextHeader(response, 400)
   response.write("I'm unable to process this request. I'm terribly sorry.")
@@ -225,51 +237,25 @@ function badRequest(response, info) {
   response.end()
 }
 
-function notFound(response) {
+// 404
+exports.notFound = function notFound(response) {
   log.info("404 Not Found")
   writePlainTextHeader(response, 400)
   response.write("The requested resource was not found.")
   response.end()
 }
 
-function internalServerError(response) {
+// 500
+exports.internalServerError = function internalServerError(response) {
   log.info("500 Internal Server Error")
   writePlainTextHeader(response, 500)
   response.write("Oops, something went wrong.")
   response.end()
 }
 
-function notImplemented(response) {
+// 501
+exports.notImplemented = function notImplemented(response) {
   log.info("501 Not Implemented")
   writeNoContentHeader(response, 501)
   response.end()
 }
-
-// GET /
-exports.root = root
-// OPTIONS *
-exports.options = options
-
-// GET /collection
-exports.list = list
-// DELETE /collection
-exports.removeCollection = removeCollection
-// GET /collection/key
-exports.retrieve = retrieve
-// POST /collection
-exports.create = create
-
-// PUT /collection/key
-exports.update = update
-// DELETE /collection/key
-exports.remove = remove
-
-
-// 400
-exports.badRequest = badRequest
-// 404
-exports.notFound = notFound
-// 500
-exports.internalServerError = internalServerError
-// 501
-exports.notImplemented = notImplemented

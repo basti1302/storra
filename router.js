@@ -33,7 +33,7 @@ var resourceRoutes = {
   }
 }
 
-function route(request, response) {
+exports.route = function route(request, response) {
   parsePath(request, function(collection, key) {
     var resource
     if (collection === undefined) {
@@ -57,7 +57,7 @@ function route(request, response) {
   })
 }
 
-// this might be too simplistic - we assume that there are at most to path
+// this might be too simplistic - we assume that there are at most two path
 // parameters and they are hardcoded to be collection and key. However,
 // currently we don't need more, it seems.
 function parsePath(request, routeToResource) {
@@ -79,6 +79,3 @@ function parsePath(request, routeToResource) {
   }
   routeToResource(collection, key)
 }
-
-
-exports.route = route
