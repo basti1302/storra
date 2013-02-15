@@ -11,11 +11,10 @@
 var url = require("url")
 
 var log = require("./log")
-var storage = require("./storage")
+var storage = require(global.storage)
 
-/* uuh, monkey patching String :-( */
-String.prototype.endsWith = function(suffix) {
-  return this.indexOf(suffix, this.length - suffix.length) !== -1;
+function endsWith(string, suffix) {
+  return string.indexOf(suffix, string.length - suffix.length) !== -1;
 }
 
 function merge(target, source) {
@@ -46,7 +45,7 @@ function fullUrl(request)
     portInUrl = (protocol == 'http' && port == 80) || (protocol == 'https' && port == 443) ? '' : ':' + port
   }
   var fullUrl = protocol + '://' + host + portInUrl + url.parse(request.url).path
-  if (!fullUrl.endsWith('/')) { fullUrl += '/' }
+  if (!endsWith(fullUrl, '/')) { fullUrl += '/' }
   return fullUrl
 }
 
@@ -103,11 +102,11 @@ exports.list = function list(request, response, collection) {
   storage.list(collection, function(err, resultObject) {
     if (err) { 
       log.error(err)
-      internalServerError(response)
+      this.internalServerError(response)
     } else {
       log.info("get/collection callback")
       writeJsonHeader(response, 200)
-      // probably pretty inefficient but somehow I can't get Query using streams to work
+      // probably pretty inefficient but somehow I can't get nstore queries using streams to work
       var resultAsArray = []
       for (var key in resultObject) {
         var document = resultObject[key]
@@ -131,7 +130,7 @@ exports.removeCollection = function removeCollection(request, response, collecti
   storage.removeCollection(collection, function(err) {
     if (err) {
       log.error(err.stack)
-      internalServerError(response)
+      this.internalServerError(response)
     } else {
       writeNoContentHeader(response, 204)
       response.end()
@@ -144,8 +143,9 @@ exports.removeCollection = function removeCollection(request, response, collecti
 exports.retrieve = function retrieve(request, response, collection, key) {
   storage.read(collection, key, function(err, document, key) {
     if (err) {
+      // TODO Here we unconditionally assume that the document was not found, reqardless of the error. This is very optimistic. Other error types will be masked as 404 Not Found. See update for a simple pattern to differentiate between errors.
       log.debug(err)
-      notFound(response)
+      this.notFound(response)
     } else {
       writeJsonHeader(response, 200)
       document.nstore_key = key
@@ -162,7 +162,7 @@ exports.create = function create(request, response, collection) {
     storage.create(collection, bodyObject, function(err, key) {
       if (err) {
         log.error(err)
-        internalServerError(response)
+        this.internalServerError(response)
       } else {
         writeNoContentHeader(response, 201, {"Location": fullUrl(request) + collection + '/' + key})
         response.end()
@@ -178,10 +178,10 @@ exports.update = function update(request, response, collection, key) {
     storage.update(collection, key, bodyObject, function(err) {
       if (err) {
         if (err == 404) {
-          notFound(response)
+          this.notFound(response)
         } else {
           log.error(err)
-          internalServerError(response)
+          this.internalServerError(response)
         }
       } else {
         writeNoContentHeader(response, 204)
@@ -216,7 +216,7 @@ exports.remove = function remove(request, response, collection, key) {
   storage.remove(collection, key, function(err) {
     if (err) {
       log.error(err.stack)
-      internalServerError(response)
+      this.internalServerError(response)
     } else {
       writeNoContentHeader(response, 204)
       response.end()
@@ -240,7 +240,7 @@ exports.badRequest = function badRequest(response, info) {
 // 404
 exports.notFound = function notFound(response) {
   log.info("404 Not Found")
-  writePlainTextHeader(response, 400)
+  writePlainTextHeader(response, 404)
   response.write("The requested resource was not found.")
   response.end()
 }

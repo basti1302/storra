@@ -12,7 +12,7 @@ nStore = nStore.extend(require('nstore/query')())
 
 var log = require('./log')
 
-function list(collectionName, writeResponse) {
+exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
   withCollectionDo(collectionName, function(collection) {
     collection.all(function(err, results) {
@@ -21,7 +21,7 @@ function list(collectionName, writeResponse) {
   })  
 }
 
-function removeCollection(collectionName, writeResponse) {
+exports.removeCollection = function removeCollection(collectionName, writeResponse) {
   log.debug("removing collection " + collectionName)
 
   // according to nstore docs the following should work, but clear
@@ -45,7 +45,7 @@ function removeCollection(collectionName, writeResponse) {
   })
 }
 
-function read(collectionName, key, writeResponse) {
+exports.read = function read(collectionName, key, writeResponse) {
   withCollectionDo(collectionName, function(collection) {
     log.debug("reading " + collectionName + "/" + key)
     collection.get(key, function (err, doc, key) {
@@ -54,7 +54,7 @@ function read(collectionName, key, writeResponse) {
   })
 }
 
-function create(collectionName, doc, writeResponse) {
+exports.create = function create(collectionName, doc, writeResponse) {
   log.debug("creating item in " + collectionName)
   withCollectionDo(collectionName, function(collection) {
     collection.save(null, doc, function (err, key) {
@@ -63,7 +63,7 @@ function create(collectionName, doc, writeResponse) {
   })
 }
 
-function update(collectionName, key, doc, writeResponse) {
+exports.update = function update(collectionName, key, doc, writeResponse) {
   log.debug("updating item " + collectionName + "/" + key)
   withCollectionDo(collectionName, function(collection) {
     // call get to make sure the key exist, otherwise we need to 404
@@ -79,7 +79,7 @@ function update(collectionName, key, doc, writeResponse) {
   })
 }
 
-function remove(collectionName, key, writeResponse) {
+exports.remove = function remove(collectionName, key, writeResponse) {
   log.debug("removing item " + collectionName + "/" + key)
   withCollectionDo(collectionName, function(collection) {
     collection.remove(key, function (err) {
@@ -101,10 +101,3 @@ function withCollectionDo(collectionName, callback) {
 function getDatabaseFilename(collectionName) {
   return 'data/' + collectionName + '.db'
 }
-
-exports.list = list
-exports.removeCollection = removeCollection
-exports.read = read
-exports.create = create
-exports.update = update
-exports.remove = remove

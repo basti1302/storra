@@ -10,6 +10,7 @@
 /* configuration */
 global.nstore_rest_server_port = 8888
 global.nstore_rest_server_bind_address = "0.0.0.0"
+global.storage = './nstore_backend'
 
 var server = require("./server")
 
