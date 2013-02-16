@@ -11,7 +11,7 @@
 var url = require("url")
 
 var log = require("./log")
-var storage = require(global.storage)
+var storage = require(global.storra_backend)
 
 function endsWith(string, suffix) {
   return string.indexOf(suffix, string.length - suffix.length) !== -1;
@@ -41,7 +41,7 @@ function fullUrl(request)
   if (host.indexOf(':' >= 0)) {
     portInUrl = ''
   } else {
-    var port = global.nstore_rest_server_port
+    var port = global.storra_port
     portInUrl = (protocol == 'http' && port == 80) || (protocol == 'https' && port == 443) ? '' : ':' + port
   }
   var fullUrl = protocol + '://' + host + portInUrl + url.parse(request.url).path
@@ -79,7 +79,7 @@ function writeJsonHeader(response, status, additionalHeaders) {
 // GET /
 exports.root = function root(request, response) {
   writePlainTextHeader(response, 400)
-  response.write("This is the nstore-rest-server. Usage:\n")
+  response.write("This is storra, the rest document store. Usage:\n")
   response.write("GET / to display this text,\n")
   response.write("GET /collection to list a collection of documents,\n")
   response.write("POST to /collection to create a new document (the new key is returned in the \"Location\" header),\n")
@@ -110,7 +110,7 @@ exports.list = function list(request, response, collection) {
       var resultAsArray = []
       for (var key in resultObject) {
         var document = resultObject[key]
-        document.nstore_key = key
+        document.storra_key = key
         resultAsArray.push(document)
       }
       response.write(JSON.stringify(resultAsArray))
@@ -148,7 +148,7 @@ exports.retrieve = function retrieve(request, response, collection, key) {
       this.notFound(response)
     } else {
       writeJsonHeader(response, 200)
-      document.nstore_key = key
+      document.storra_key = key
       response.write(JSON.stringify(document))
       response.end()
       log.debug("successfully read " + collection + "/" + key)

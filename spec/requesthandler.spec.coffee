@@ -27,7 +27,7 @@ describe "The request handler", ->
       'end'
     ])
 
-    global.storage = './storage'
+    global.storra_backend = './storage'
     requesthandler = sandbox.require '../requesthandler', 
       requires:
         './storage': storage
@@ -78,7 +78,7 @@ describe "The request handler", ->
     callback = storage.read.mostRecentCall.args[2]
     callback.call(requesthandler, undefined, {foo: 'bar'}, 'key')
     expectResponse 200
-    expectContent('{"foo":"bar","nstore_key":"key"}')
+    expectContent('{"foo":"bar","storra_key":"key"}')
 
   it "says 404 if serving a document fails", ->
     requesthandler.retrieve(request, response, 'collection', 'key')

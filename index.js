@@ -3,14 +3,14 @@
 'use strict'
 
 /*
- * main js file of nstore-rest-server.
+ * main js file of storra.
  * Use "node index.js" to start the server.
  */
 
 /* configuration */
-global.nstore_rest_server_port = 8888
-global.nstore_rest_server_bind_address = "0.0.0.0"
-global.storage = './nstore_backend'
+global.storra_port = 8888
+global.storra_bind_address = "0.0.0.0"
+global.storra_backend = './nstore_backend'
 
 var server = require("./server")
 
