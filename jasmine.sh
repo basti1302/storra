@@ -1,3 +1,3 @@
-#!/bin/bash
+#!/usr/bin/env bash
 clear
-jasmine-node --coffee --verbose spec
+jasmine-node spec --coffee --verbose $*
