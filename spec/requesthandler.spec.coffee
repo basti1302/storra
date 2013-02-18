@@ -46,44 +46,37 @@ describe "The request handler", ->
   it "serves a collection of documents", -> 
     requesthandler.list(request, response, 'collection')
     expect(storage.list).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    # execute callback that would be called from storage.list
-    callback = storage.list.mostRecentCall.args[1]
-    callback.call(requesthandler, undefined, [])
+    whenCallback(storage.list, 1).thenCallIt(requesthandler, undefined, []) 
     expectResponse 200
     expectContent()
   
   it "says 500 if listing the collection fails", -> 
     requesthandler.list(request, response, 'collection')
-    callback = storage.list.mostRecentCall.args[1]
-    callback.call(requesthandler, 'error', [])
+    whenCallback(storage.list, 1).thenCallIt(requesthandler, 'error', []) 
     expect500()
 
   it "removes a collection", ->
     requesthandler.removeCollection(request, response, 'collection')
     expect(storage.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    callback = storage.removeCollection.mostRecentCall.args[1]
-    callback.call(requesthandler, undefined)
+    whenCallback(storage.removeCollection, 1).thenCallIt(requesthandler, undefined) 
     expectResponse 204
     expectNoContent()
 
   it "says 500 if removing a collection fails", ->
     requesthandler.removeCollection(request, response, 'collection')
     expect(storage.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    callback = storage.removeCollection.mostRecentCall.args[1]
-    callback.call(requesthandler, 'error')
+    whenCallback(storage.removeCollection, 1).thenCallIt(requesthandler, 'error') 
     expect500()
 
   it "serves a document", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    callback = storage.read.mostRecentCall.args[2]
-    callback.call(requesthandler, undefined, {foo: 'bar'}, 'key')
+    whenCallback(storage.read, 2).thenCallIt(requesthandler, undefined, {foo: 'bar'}, 'key') 
     expectResponse 200
     expectContent('{"foo":"bar","storra_key":"key"}')
 
   it "says 404 if serving a document fails", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    callback = storage.read.mostRecentCall.args[2]
-    callback.call(requesthandler, 'error', {}, 'key')
+    whenCallback(storage.read, 2).thenCallIt(requesthandler, 'error', {}, 'key') 
     # TODO requesthandler unconditionally assumes that the document was not found, reqardless of the error. This is very optimistic. Other error types will be masked as 404 Not Found.
     expect404()
 
@@ -91,53 +84,47 @@ describe "The request handler", ->
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
     expect(storage.create).toHaveBeenCalled()
-    storageCallback = storage.create.mostRecentCall.args[2]
-    storageCallback.call(requesthandler, undefined, 'key')
+    whenCallback(storage.create, 2).thenCallIt(requesthandler, undefined, 'key') 
     expectResponse 201
-    #expect(response.writeHead).toHaveBeenCalledWith("Location")
+    # TODO Check if location header is written correctly 
+    #expect(response.writeHead).toHaveBeenCalledWith("Location"... )
     expectNoContent()
 
   it "says 500 if creating a document fails", ->
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
-    storageCallback = storage.create.mostRecentCall.args[2]
-    storageCallback.call(requesthandler, 'error', 'key')
+    whenCallback(storage.create, 2).thenCallIt(requesthandler, 'error', 'key') 
     expect500()
 
   it "updates a document", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
     expect(storage.update).toHaveBeenCalled()
-    storageCallback = storage.update.mostRecentCall.args[3]
-    storageCallback.call(requesthandler, undefined)
+    whenCallback(storage.update, 3).thenCallIt(requesthandler, undefined) 
     expectResponse 204
     expectNoContent()
 
   it "says 404 if the document is not found during update", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    storageCallback = storage.update.mostRecentCall.args[3]
-    storageCallback.call(requesthandler, 404)
+    whenCallback(storage.update, 3).thenCallIt(requesthandler, 404) 
     expect404()
 
   it "says 500 if updating a document fails", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    storageCallback = storage.update.mostRecentCall.args[3]
-    storageCallback.call(requesthandler, 'error')
+    whenCallback(storage.update, 3).thenCallIt(requesthandler, 'error') 
     expect500()
 
   it "deletes a document", ->
     requesthandler.remove(request, response, 'collection', 'key')
-    callback = storage.remove.mostRecentCall.args[2]
-    callback.call(requesthandler, undefined)
+    whenCallback(storage.remove, 2).thenCallIt(requesthandler, undefined) 
     expectResponse 204
     expectNoContent()
 
   it "says 500 if deleting  a document fails", ->
     requesthandler.remove(request, response, 'collection', 'key')
-    callback = storage.remove.mostRecentCall.args[2]
-    callback.call(requesthandler, 'error')
+    whenCallback(storage.remove, 2).thenCallIt(requesthandler, 'error') 
     expect500()
 
   it "handles bad requests", ->
@@ -161,6 +148,13 @@ describe "The request handler", ->
     expectNoContent()
 
 
+  whenCallback = (spy, callbackIndex) ->
+    callback = spy.mostRecentCall.args[callbackIndex] 
+    ret =
+      thenCallIt: (callOn, args...) ->
+        callback.call(callOn, args...)
+    return ret
+   
   expectResponse = (status) ->
     expect(response.writeHead).toHaveBeenCalledWith(status, jasmine.any(Object)) 
 
