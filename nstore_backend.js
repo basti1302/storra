@@ -68,6 +68,7 @@ exports.update = function update(collectionName, key, doc, writeResponse) {
   withCollectionDo(collectionName, function(collection) {
     // call get to make sure the key exist, otherwise we need to 404
     collection.get(key, function (err) {
+      // TODO Differentiate between 404 and other errors!
       if (err) { 
         writeResponse(404) 
       } else {
