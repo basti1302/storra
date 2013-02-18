@@ -26,7 +26,7 @@ describe "The nstore backend", ->
       'exists'
       'unlink'
     ])
-    backend = sandbox.require '../nstore_backend',
+    backend = sandbox.require '../backends/nstore_backend',
       requires:
         'nstore': nstore
         'fs': fs

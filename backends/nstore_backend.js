@@ -10,7 +10,7 @@ var fs = require('fs');
 var nStore = require('nstore')
 nStore = nStore.extend(require('nstore/query')())
 
-var log = require('./log')
+var log = require('../log')
 
 exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
