@@ -1,0 +1,13 @@
+add queries
+  how to query RESTful?
+  unified query language for all backends or individual queries for each backend?
+add "serious" backend
+  mongoDB
+  couchDB?
+  riak?
+configure per yaml instead of hacking index.js
+  port
+  bind address
+  backend
+get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
+  configure routing per yaml? let backend configure routing?
