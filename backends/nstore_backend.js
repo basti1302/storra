@@ -92,6 +92,8 @@ exports.remove = function remove(collectionName, key, writeResponse) {
 
 
 function withCollectionDo(collectionName, callback) {
+  // TODO Each db operation loads the collection from the file system. This sucks.
+  // We need to cache the open collections, otherwise we abuse the in-memory database as a file system database.
   var collection = nStore.new(getDatabaseFilename(collectionName), function (err) {
     if (err) { throw err }
     /* (too chatty)  log.debug("collection " + collectionName + " created/loaded") */
@@ -100,5 +102,5 @@ function withCollectionDo(collectionName, callback) {
 }
 
 function getDatabaseFilename(collectionName) {
-  return 'data/' + collectionName + '.db'
+  return 'data/' + collectionName + '.nstore.db'
 }
