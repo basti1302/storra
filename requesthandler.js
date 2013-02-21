@@ -98,13 +98,11 @@ exports.options = function options(request, response) {
 
 // GET /collection
 exports.list = function list(request, response, collection) {
-  log.info("get/collection start")
   storage.list(collection, function(err, resultObject) {
     if (err) { 
       log.error(err)
       this.internalServerError(response)
     } else {
-      log.info("get/collection callback")
       writeJsonHeader(response, 200)
       // probably pretty inefficient but somehow I can't get nstore queries using streams to work
       var resultAsArray = []
@@ -118,7 +116,6 @@ exports.list = function list(request, response, collection) {
       // to write complete list as object instead of array
       // response.write(JSON.stringify(results))
      
-      log.info("get/collection resp.end")
       response.end()
       log.debug("successfully listed " + collection)
     }
