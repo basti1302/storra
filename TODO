@@ -1,4 +1,3 @@
-add package.json
 add queries
   how to query RESTful?
   unified query language for all backends or individual queries for each backend?
