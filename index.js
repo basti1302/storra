@@ -12,8 +12,8 @@ var log = require('./log')
 /* configuration */
 global.storra_port = 8888
 global.storra_bind_address = "0.0.0.0"
-// global.storra_backend = './backends/node_dirty_backend'
-global.storra_backend = './backends/nstore_backend'
+global.storra_backend = './backends/node_dirty_backend'
+// global.storra_backend = './backends/nstore_backend'
 
 var server = require("./server")
 
