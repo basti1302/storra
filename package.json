@@ -1,0 +1,42 @@
+{
+  "name": "storra",
+  "version": "0.0.1",
+  "author": "Bastian Krol",
+  "description": "a generic stand-alone document store with a RESTful interface which can be configured to use different storage engines (MongoDB (not yet), nStore, node-dirty, ...), all encapsulated behind the same CRUD/REST API",
+  "contributors": [],
+  "preferGlobal": "true",
+  "bin": {
+    "storra": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "jasmine-node --coffee spec"
+  },
+  "keywords": [
+    "persistence",
+    "key value",
+    "document store",
+    "REST",
+    "http"
+  ],
+  "dependencies": {
+    "dirty": "0.9.6",
+    "node-uuid": "1.4.0",
+    "nstore": "0.5.1"
+  },
+  "comment_devDependencies": "jasmine-node 1.2.x needs to be installed but prefers to be installed globally which is not possible via package.json",
+
+  "devDependencies": {
+    "sandboxed-module": "0.2.x",
+    "step": ">=0.0.5"
+  },
+  "bundledDependencies": [
+    "dirty",
+    "node-uuid",
+    "nstore",
+    "step"
+  ],
+  "engines": {
+    "node": ">=0.6.x"
+  }
+}
