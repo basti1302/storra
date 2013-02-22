@@ -14,10 +14,10 @@ var uuid = require('node-uuid')
 exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
   withCollectionDo(collectionName, function(collection) {
-    var results = []
-    collection.forEach(function(key, val) {
-      log.debug("Entry: " + key + "; value: " + val)
-      results.push(val)
+    var results = {}
+    collection.forEach(function(key, doc) {
+      log.debug("Entry: " + key + "; value: " + doc)
+      results[key] = doc
     })
     writeResponse(undefined, results)
   })
