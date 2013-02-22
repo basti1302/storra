@@ -79,7 +79,7 @@ function writeJsonHeader(response, status, additionalHeaders) {
 // GET /
 exports.root = function root(request, response) {
   writePlainTextHeader(response, 400)
-  response.write("This is storra, the rest document store. Usage:\n")
+  response.write("This is storra, the REST document store. Usage:\n")
   response.write("GET / to display this text,\n")
   response.write("GET /collection to list a collection of documents,\n")
   response.write("POST to /collection to create a new document (the new key is returned in the \"Location\" header),\n")
@@ -101,7 +101,7 @@ exports.list = function list(request, response, collection) {
   storage.list(collection, function(err, resultObject) {
     if (err) { 
       log.error(err)
-      this.internalServerError(response)
+      exports.internalServerError(response)
     } else {
       writeJsonHeader(response, 200)
       // probably pretty inefficient but somehow I can't get nstore queries using streams to work
@@ -127,7 +127,7 @@ exports.removeCollection = function removeCollection(request, response, collecti
   storage.removeCollection(collection, function(err) {
     if (err) {
       log.error(err.stack)
-      this.internalServerError(response)
+      exports.internalServerError(response)
     } else {
       writeNoContentHeader(response, 204)
       response.end()
@@ -141,8 +141,8 @@ exports.retrieve = function retrieve(request, response, collection, key) {
   storage.read(collection, key, function(err, document, key) {
     if (err) {
       // TODO Here we unconditionally assume that the document was not found, reqardless of the error. This is very optimistic. Other error types will be masked as 404 Not Found. See update for a simple pattern to differentiate between errors.
-      log.debug(err)
-      this.notFound(response)
+      log.debug("error during storage.read: " + err)
+      exports.notFound(response)
     } else {
       writeJsonHeader(response, 200)
       document.storra_key = key
@@ -159,7 +159,7 @@ exports.create = function create(request, response, collection) {
     storage.create(collection, bodyObject, function(err, key) {
       if (err) {
         log.error(err)
-        this.internalServerError(response)
+        exports.internalServerError(response)
       } else {
         writeNoContentHeader(response, 201, {"Location": fullUrl(request) + collection + '/' + key})
         response.end()
@@ -175,10 +175,10 @@ exports.update = function update(request, response, collection, key) {
     storage.update(collection, key, bodyObject, function(err) {
       if (err) {
         if (err == 404) {
-          this.notFound(response)
+          exports.notFound(response)
         } else {
           log.error(err)
-          this.internalServerError(response)
+          exports.internalServerError(response)
         }
       } else {
         writeNoContentHeader(response, 204)
@@ -213,7 +213,7 @@ exports.remove = function remove(request, response, collection, key) {
   storage.remove(collection, key, function(err) {
     if (err) {
       log.error(err.stack)
-      this.internalServerError(response)
+      exports.internalServerError(response)
     } else {
       writeNoContentHeader(response, 204)
       response.end()
