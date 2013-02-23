@@ -5,6 +5,8 @@ add "serious" backend
   mongoDB
   couchDB?
   riak?
+  redis?
+  MySQL, Oracle??, sqlite
 cache open collections for nstore and node-dirty
 configure per yaml instead of hacking index.js
   port
@@ -12,4 +14,5 @@ configure per yaml instead of hacking index.js
   backend
 get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
   configure routing per yaml? let backend configure routing?
-built-in multi-tenant-capabilities would be cool, maybe
+built-in multi-tenant-capabilities would be cool, maybe, or something like multiple virtual storra servers under one "physical" storra servers (each configured separately) - think shared storra hosting
+

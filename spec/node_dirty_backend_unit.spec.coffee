@@ -37,7 +37,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
     backend.list('collection', writeResponse) 
     whenCallback(collection.on, 1).thenCallIt(backend)
     whenCallback(collection.forEach, 0).thenCallIt(backend, 'key', {a: "b"})
-    expect(writeResponse).toHaveBeenCalledWith(undefined, [{a: "b"}])
+    expect(writeResponse).toHaveBeenCalledWith(undefined, {key: {a: "b"}})
 
   # Duplication: Same test (and same implementation) as for nStore backend
   it "removes an existing collection", ->

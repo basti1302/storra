@@ -76,9 +76,9 @@ describe "The node-dirty backend (without mocked dependencies)", ->
     runs ->
       expect(key1).not.toBe(null)
       expect(key2).not.toBe(null)
-      expect(listing.length).toEqual(2)
-      expect(listing[0]).toEqual({some_attribute: 'abc'})
-      expect(listing[1]).toEqual({some_attribute: 'xyz'})
+      console.log("LST: " + JSON.stringify(listing))
+      expect(listing[key1]).toEqual({some_attribute: 'abc'})
+      expect(listing[key2]).toEqual({some_attribute: 'xyz'})
       expect(read1).toEqual({some_attribute: 'abc'})
       expect(read2).toEqual({some_attribute: 'xyz'})
       expect(read3).toEqual({some_attribute: 123, another_attribute: 456})

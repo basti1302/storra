@@ -1,0 +1,67 @@
+START SMALL! AS SMALL AS POSSIBLE!
+TEST THE WATERS - THEN GO/GROW SLOWLY
+
+OFFER STORRA AS A HOSTED SERVICE => Persistence as a Service - PersAAS
+
+get domains storra.com, storra.org, storra.de
+offer the service completely for free first, with or without quotas
+later: free for small projects (see quotas), plans for larger projects
+quotas:
+ - # of documents
+ - volume (MB/GB)
+ - read requests
+ - write requests
+storra-stat as seperate module which can be integrated plug-in style (no dependency from storra to storra-stat):
+ - counts requests & other quota-relevant data
+storra-quota as separate plug-in
+ - disallows (depending on which quotas have been hit)
+   - creation of new documents
+   - read requests
+   - write requests
+
+use cases:
+ - storra as backend for client web UIs/single page apps (AngularJS and similar)
+ - storra as backend for mobile2cloud apps (native or HTML5)
+ - storra as backend for REST/HATEOS/ROCA non-single-page apps - does that make sense?
+
+advantages for customers:
+ - absolutely no lock in whatsoever
+ - you can switch database backends like other people change their underpants
+ - if you want to, it's easy to switch to self-hosted storra later (its open source)
+ - it's easy to switch to some non-storra database backend later - just wrap it in some REST service
+
+offer value-added storra-plugins for storra enterprise customers
+ - statistics & reporting
+ - performance analysis
+ - datawarehouse reports
+ - integration with ... well whatever makes sense
+
+client libs:
+ - First of all: you don't need any client libs. You just do http GET/POST/PUT/DELETE
+ - Anyway, if you would like a lib, here are some
+   - plain vanilla javascript
+   - node.js
+   - ruby (resource mapper?)
+   - java
+   - maybe python, php, C#, closure, scala, ...
+   - Either just a persistence layer API which is just a client API for storra REST API
+     OR
+   - a domain model library that hides storra (JPA-like, active_record, ...)
+     OR
+   - both, one atop each other
+
+caveats:
+watch out for network latency, performance and such - how does a http(s) service call compare to native database network call? We need numbers here.
+
+storra.com web site
+ - create storra instances on the fly
+ - account management
+ - payment 
+ - see database statistics
+ - browse database contents - watch out for security
+
+more services:
+ - storra consulting
+ - node.js and javascript consulting
+ - node.js software development
+
