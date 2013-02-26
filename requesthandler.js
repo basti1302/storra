@@ -158,7 +158,7 @@ exports.create = function create(request, response, collection) {
   createOrUpdate(request, response, function(bodyObject) {
     storage.create(collection, bodyObject, function(err, key) {
       if (err) {
-        log.error(err)
+        log.error('Error in storage.create: ' + err)
         exports.internalServerError(response)
       } else {
         writeNoContentHeader(response, 201, {"Location": fullUrl(request) + collection + '/' + key})

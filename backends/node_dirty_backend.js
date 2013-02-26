@@ -8,15 +8,16 @@
 
 var fs = require('fs');
 var dirty = require('dirty')
-var log = require('../log')
 var uuid = require('node-uuid')
+
+var cache = new (require ('./collection_cache'))()
+var log = require('../log')
 
 exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
   withCollectionDo(collectionName, function(collection) {
     var results = {}
     collection.forEach(function(key, doc) {
-      log.debug("Entry: " + key + "; value: " + doc)
       results[key] = doc
     })
     writeResponse(undefined, results)
@@ -30,6 +31,7 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
   // For now, we just do a hard filesystem delete on the file.
   // Of course, this is bound to break on concurrent requests.
   var file = getDatabaseFilename(collectionName)
+  cache.remove(file)
   fs.exists(file, function (exists) {
     if (exists) {
       fs.unlink(file, function (err) {
@@ -90,11 +92,7 @@ exports.remove = function remove(collectionName, key, writeResponse) {
  * For read access, use this method and pass a callback.
  */
 function withCollectionDo(collectionName, callback) {
-  var collection = openCollection(collectionName)
-  collection.on('load', function() {
-    log.debug("collection " + collectionName + " created/loaded")
-    callback(collection)
-  })
+  _accessCollection(collectionName, callback)
 }
 
 /*
@@ -103,9 +101,31 @@ function withCollectionDo(collectionName, callback) {
  * for the event 'load', however. See withCollectionDo.
  */
 function openCollection(collectionName) {
-  // TODO Each db operation loads the collection from the file system. This sucks.
-  // We need to cache the open collections, otherwise we abuse the in-memory database as a file system database.
-  return dirty.Dirty(getDatabaseFilename(collectionName))
+  return _accessCollection(collectionName, undefined)
+}
+
+/* To be used only from withCollectionDo and openCollection */
+function _accessCollection(collectionName, callback) {
+  var name = getDatabaseFilename(collectionName)
+  var collection = cache.get(name)
+  if (collection) {
+    log.debug('accessing collection ' + name + ' via cached collection object.') 
+    if (callback) {
+      callback(collection)
+    }
+    return collection
+  } else {
+    log.debug("collection " + collectionName + " was not in cache.")
+    collection = dirty.Dirty(name)
+    collection.on('load', function() {
+      log.debug("collection " + collectionName + " created/loaded.")
+      cache.put(name, collection)
+      if (callback) {
+        callback(collection)
+      }
+    })
+    return collection
+  }
 }
 
 function getDatabaseFilename(collectionName) {

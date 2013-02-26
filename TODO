@@ -7,7 +7,9 @@ add "serious" backend
   riak?
   redis?
   MySQL, Oracle??, sqlite
-cache open collections for nstore and node-dirty
+drop nstore backend
+use callback versions of node-dirty API everywhere
+log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
 configure per yaml instead of hacking index.js
   port
   bind address

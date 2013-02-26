@@ -10,6 +10,7 @@ var fs = require('fs');
 var nStore = require('nstore')
 nStore = nStore.extend(require('nstore/query')())
 
+var cache = new (require ('./collection_cache'))()
 var log = require('../log')
 
 exports.list = function list(collectionName, writeResponse) {
@@ -33,6 +34,7 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
   // For now, we just do a hard filesystem delete on the file.
   // Of course, this is bound to break on concurrent requests.
   var file = getDatabaseFilename(collectionName)
+  // [COLLECTION CACHING DISABLED] cache.remove(file)
   fs.exists(file, function (exists) {
     if (exists) {
       fs.unlink(file, function (err) {
@@ -92,13 +94,22 @@ exports.remove = function remove(collectionName, key, writeResponse) {
 
 
 function withCollectionDo(collectionName, callback) {
-  // TODO Each db operation loads the collection from the file system. This sucks.
-  // We need to cache the open collections, otherwise we abuse the in-memory database as a file system database.
-  var collection = nStore.new(getDatabaseFilename(collectionName), function (err) {
+  var name = getDatabaseFilename(collectionName)
+  // [COLLECTION CACHING DISABLED]
+  // var collection = cache.get(name)
+  // if (collection) {
+  //  log.debug('accessing collection ' + name + ' via cached collection object.') 
+  //  callback(collection)
+  // } else {
+  collection = nStore.new(name, function (err) {
+    // log.debug('collection ' + name + ' was not in cache.') 
     if (err) { throw err }
-    /* (too chatty)  log.debug("collection " + collectionName + " created/loaded") */
+    log.debug("collection " + collectionName + " created/loaded.")
+    // cache.put(name, collection)
     callback(collection)
   })
+  // [COLLECTION CACHING DISABLED] 
+  // }
 }
 
 function getDatabaseFilename(collectionName) {

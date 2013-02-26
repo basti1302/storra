@@ -20,9 +20,10 @@
     "http"
   ],
   "dependencies": {
-    "dirty": "0.9.6",
-    "node-uuid": "1.4.0",
-    "nstore": "0.5.1"
+    "dirty": "0.9.x",
+    "node-uuid": "1.4.x",
+    "nstore": "0.5.1",
+    "js-yaml": "2.0.x"
   },
   "comment_devDependencies": "jasmine-node 1.2.x needs to be installed but prefers to be installed globally which is not possible via package.json",
 
