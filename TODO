@@ -1,16 +1,41 @@
-add queries
-  how to query RESTful?
-  unified query language for all backends or individual queries for each backend?
-add "serious" backend
-  mongoDB
-  couchDB?
-  riak?
-  redis?
-  MySQL, Oracle??, sqlite
-drop nstore backend
-use callback versions of node-dirty API everywhere
+== Storra Core Features ==
+* Add "serious" backends, a whole lot of them, one after another...
+  - Caution: For hosted Storra, this is less important. The customer probably does not really care about the backend.
+  - MongoDB
+  - CouchDB?
+  - Riak?
+  - Redis?
+  - Traditional SQL DBs?
+    - MySQL
+    - sqlite
+    - Oracle??
+ * Queries
+  - how to query RESTful?
+  - unified query language for all backends or individual queries for each backend?
+  - use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
+* Drop nstore backend completely
+* Get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
+* Use callback versions of node-dirty API everywhere
 log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
-get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
+* Performance tests
+  - Performance testing with different backends, without network latency, without concurrent requests
+  - Load/throughput tests with a huge number of concurrent requests - choose a backend, which supports this scenario well. Second step: Execute these tests with different backends.
+  - Performance tests including *local* network latency and with comparisons to accessing the DB directly
+  - Performance tests for distributed scenario (Storra as a hosted service somewhere else) - conclusions?
   configure routing per yaml? let backend configure routing?
-built-in multi-tenant-capabilities would be cool, maybe, or something like multiple virtual storra servers under one "physical" storra servers (each configured separately) - think shared storra hosting
+* Built-in multi-tenant-capabilities would be cool, maybe, or something like multiple virtual storra servers under one "physical" storra servers (each configured separately) - think shared storra hosting
+* Push capabilities (push stuff to mobile phones when certain data is changed/added)
 
+== Storra Infrastructure ==
+* Requirements:
+  - Load Balancing
+  - Fail Over
+  - Monitor/restart node processes
+  - SSL
+* Solutions
+  - Look into node-supervisor and similar solutions
+  - nginx before Storra?
+
+== Storra Security ==
+* Deny access everybody except users
+* Enforce isolation of tenants

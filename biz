@@ -2,6 +2,7 @@ START SMALL! AS SMALL AS POSSIBLE!
 TEST THE WATERS - THEN GO/GROW SLOWLY
 
 OFFER STORRA AS A HOSTED SERVICE => Persistence as a Service - PersAAS
+* Does the customer get access to configuration? In particular, can she choose the backend?
 
 get domains storra.com, storra.org, storra.de
 offer the service completely for free first, with or without quotas
@@ -21,7 +22,7 @@ storra-quota as separate plug-in
 
 use cases:
  - storra as backend for client web UIs/single page apps (AngularJS and similar)
- - storra as backend for mobile2cloud apps (native or HTML5)
+ - storra as backend for mobile2cloud apps (native and/or HTML5 and/or hybrid)
  - storra as backend for REST/HATEOS/ROCA non-single-page apps - does that make sense?
 
 advantages for customers:
@@ -53,12 +54,13 @@ client libs:
 caveats:
 watch out for network latency, performance and such - how does a http(s) service call compare to native database network call? We need numbers here.
 
-storra.com web site
+== storra.com web site ==
  - create storra instances on the fly
  - account management
  - payment 
  - see database statistics
  - browse database contents - watch out for security
+ - all data (customers, accounts, storra instances) is stored in our own storra - that goes without saying but we need to say it loud and often to prove we are eating our own dogfood
 
 more services:
  - storra consulting
