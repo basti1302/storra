@@ -139,9 +139,6 @@ exports.retrieve = function retrieve(request, response, collection, key) {
       exports.internalServerError(response)
     } else {
       writeJsonHeader(response, 200)
-      if (!document._id) {
-        document._id = key
-      }
       response.write(JSON.stringify(document))
       response.end()
       log.debug("successfully read " + collection + "/" + key)

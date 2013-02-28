@@ -70,7 +70,7 @@ describe "The request handler", ->
 
   it "serves a document", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(storage.read, 2).thenCallIt(requesthandler, undefined, {foo: 'bar'}, 'key')
+    whenCallback(storage.read, 2).thenCallIt(requesthandler, undefined, {foo: 'bar', _id: 'key'}, 'key')
     expectResponse 200
     expectContent('{"foo":"bar","_id":"key"}')
 
