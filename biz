@@ -24,6 +24,7 @@ use cases:
  - storra as backend for client web UIs/single page apps (AngularJS and similar)
  - storra as backend for mobile2cloud apps (native and/or HTML5 and/or hybrid)
  - storra as backend for REST/HATEOS/ROCA non-single-page apps - does that make sense?
+ - show case storra as backend for backbone.js - connect backbone.js' example todo app to storra.
 
 advantages for customers:
  - absolutely no lock in whatsoever
