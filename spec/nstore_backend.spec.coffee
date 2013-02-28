@@ -1,4 +1,4 @@
-describe "The nstore backend", ->
+xdescribe "The nstore backend", ->
 
   sandbox = null
   fs = null

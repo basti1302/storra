@@ -52,7 +52,7 @@ function fullUrl(request)
 
 function writeHeader(response, status, additionalHeaders) {
   response.writeHead(status, merge({
-    "Access-Control-Allow-Origin": "*", 
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept",
     "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Credentials": true,
@@ -99,7 +99,7 @@ exports.options = function options(request, response) {
 // GET /collection
 exports.list = function list(request, response, collection) {
   storage.list(collection, function(err, resultObject) {
-    if (err) { 
+    if (err) {
       log.error(err)
       exports.internalServerError(response)
     } else {
@@ -115,7 +115,7 @@ exports.list = function list(request, response, collection) {
 
       // to write complete list as object instead of array
       // response.write(JSON.stringify(results))
-     
+
       response.end()
       log.debug("successfully listed " + collection)
     }
@@ -132,17 +132,18 @@ exports.removeCollection = function removeCollection(request, response, collecti
       writeNoContentHeader(response, 204)
       response.end()
       log.debug("successfully removed collection " + collection)
-    }        
+    }
   })
 }
 
 // GET /collection/key
 exports.retrieve = function retrieve(request, response, collection, key) {
   storage.read(collection, key, function(err, document, key) {
-    if (err) {
-      // TODO Here we unconditionally assume that the document was not found, reqardless of the error. This is very optimistic. Other error types will be masked as 404 Not Found. See update for a simple pattern to differentiate between errors.
-      log.debug("error during storage.read: " + err)
+    if (err === 404) {
       exports.notFound(response)
+    } else if (err) {
+      log.error(err.stack)
+      exports.internalServerError(response)
     } else {
       writeJsonHeader(response, 200)
       document.storra_key = key
@@ -184,7 +185,7 @@ exports.update = function update(request, response, collection, key) {
         writeNoContentHeader(response, 204)
         response.end()
         log.debug("successfully updated " + collection + "/" + key)
-      }        
+      }
     })
   })
 }
@@ -218,7 +219,7 @@ exports.remove = function remove(request, response, collection, key) {
       writeNoContentHeader(response, 204)
       response.end()
       log.debug("successfully removed " + collection + "/" + key)
-    }        
+    }
   })
 }
 
