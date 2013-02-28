@@ -1,7 +1,7 @@
 'use strict'
 
 /*
- * Wrapper for {database}.
+ * Wrapper for MongoDB.
  */
 
 var log = require('../log')
@@ -15,8 +15,6 @@ var database = 'storra'
 // TODO Cache mongodb connections - how to close them properly when
 // evicting from cache and when node exits?
 
-// TODO How to handle _id of the objects read from MongoDB?
-// Touch each object and replace _id with storra_key?
 // That's probably quite expensive. But OTOH we want to present a
 // somewhat uniform interface and hide the backend specialties.
 // Maybe we should go with _id all the way. It seems that at least MongoDB and CouchDB agree on this.
@@ -32,18 +30,16 @@ exports.list = function list(collectionName, writeResponse) {
     // TODO: We need chunking/streaming here, to write back large result sets back to the
     // response in chunks, probably calling ourselves recursivly per process.nextTick to allow
     // other requests to be handled in between the chunks, otherwise the listing of large collections
-    // block here. This also influences how requesthandler writes the response. requesthandler
-    // probably needs to pass in a writeChunk callback and an end callback. Or we need to emit
-    // events here. Also, check other backends.
+    // block here. This also influences how requesthandler writes the response, see the TODO there.
 
-    var results = {}
+    var results = [] 
     db.collection(collectionName).find().each(function(err, doc) {
       if (err) {
         mongoClient.close()
         writeResponse(err, null)
       } else if (doc) {
         log.debug("listing entry: " + JSON.stringify(doc))
-        results[doc['_id']] = doc
+        results.push(doc)
       } else {
         // db cursor exhausted, no more results -> write response
         mongoClient.close()

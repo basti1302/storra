@@ -16,9 +16,10 @@ var log = require('../log')
 exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
   withCollectionDo(collectionName, function(collection) {
-    var results = {}
+    var results = []
     collection.forEach(function(key, doc) {
-      results[key] = doc
+      doc._id = key
+      results.push(doc)
     })
     writeResponse(undefined, results)
   })
@@ -49,6 +50,7 @@ exports.read = function read(collectionName, key, writeResponse) {
     log.debug("reading " + collectionName + "/" + key)
     var doc = collection.get(key) 
     if (doc) {
+      doc._id = key
       writeResponse(undefined, doc, key)
     } else {
       writeResponse(404, null, key)

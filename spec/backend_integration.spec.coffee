@@ -14,19 +14,22 @@ describe "Common backend integration test:", ->
   parameterized = (backend_module, backend_name) ->
     describe "The " + backend_name + " backend (without mocked dependencies)", ->
 
+    # TODO Use _id from listing to read one doc
+
     backend = null
     finished = false
-    key1 = null
-    key2 = null
+
     listing = null
-    read1 = null
-    read2 = null
-    read3 = null
-    read4 = null
+    keys = []
+    read_documents = []
     errors = []
 
     beforeEach ->
       backend = require backend_module
+      listing = null
+      keys = []
+      read_documents = []
+      errors = []
       finished = false
       errors = []
 
@@ -70,58 +73,58 @@ describe "Common backend integration test:", ->
             if (logIntermediateResults)
               log.info('create -> error, key: ' + error + ', ' + key)
             errors.push error
-            key1 = key
+            keys[0] = key
             backend.create('test', {some_attribute: 'xyz'}, this)
           ,
           (error, key) ->
             if (logIntermediateResults)
               log.info('create -> error, key: ' + error + ', ' + key)
             errors.push error
-            key2 = key
+            keys[1] = key
             backend.list('test', this)
           ,
           (error, results) ->
             if (logIntermediateResults)
-              log.info('list -> error, results: ' + error + ', ' + results)
+              log.info('list -> error, results: ' + error + ', ' + JSON.stringify(results))
             errors.push error
             listing = results
-            backend.read('test', key1, this)
+            backend.read('test', keys[0], this)
           ,
           (error, doc, key) ->
             if (logIntermediateResults)
               log.info('read -> error, doc, key: ' + error + ', ' + doc + ', ' + key)
             errors.push error
-            read1 = doc
-            backend.read('test', key2, this)
+            read_documents[0] = doc
+            backend.read('test', keys[1], this)
           ,
           (error, doc, key) ->
             if (logIntermediateResults)
               log.info('read -> error, doc, key: ' + error + ', ' + doc + ', ' + key)
             errors.push error
-            read2 = doc
-            backend.update('test', key1, {second_attribute: 123, third_attribute: 456}, this)
+            read_documents[1] = doc
+            backend.update('test', keys[0], {second_attribute: 123, third_attribute: 456}, this)
         ,
           (error) ->
             if (logIntermediateResults)
               log.info('update -> error: ' + error)
             errors.push error
-            backend.read('test', key1, this)
+            backend.read('test', keys[0], this)
           (error, doc, key) ->
             if (logIntermediateResults)
               log.info('read -> error, doc, key: ' + error + ', ' + doc + ', ' + key)
             errors.push error
-            read3 = doc
-            backend.remove('test', key2, this)
+            read_documents[2] = doc
+            backend.remove('test', keys[1], this)
           (error) ->
             if (logIntermediateResults)
               log.info('remove -> error: ' + error)
             errors.push error
-            backend.read('test', key2, this)
+            backend.read('test', keys[1], this)
           (error, doc, key) ->
             if (logIntermediateResults)
               log.info('read -> error, doc, key: ' + error + ', ' + doc + ', ' + key)
             errors.push error
-            read4 = doc
+            read_documents[3] = doc
             finished = true
         )
     
@@ -131,24 +134,24 @@ describe "Common backend integration test:", ->
       runs ->
         checkError(i, error) for error, i in errors[0..errors.length - 2]
         expect(errors[errors.length - 1]).toBe(404)
-        expect(key1).not.toBe(null)
-        expect(key2).not.toBe(null)
-        # enable check when backends return array instead of object
-        # expect(listing.length).toBe(2)
-        fromListing1 = listing[key1]
-        fromListing2 = listing[key2]
-        expect(fromListing1).toBeDefined()
-        expect(fromListing1['some_attribute']).toEqual('abc')
-        expect(fromListing2).toBeDefined()
-        expect(fromListing2['some_attribute']).toEqual('xyz')
-        expect(read1).toBeDefined()
-        expect(read1['some_attribute']).toEqual('abc')
-        expect(read2).toBeDefined()
-        expect(read2['some_attribute']).toEqual('xyz')
-        expect(read2).toBeDefined()
-        expect(read3['second_attribute']).toEqual(123)
-        expect(read3['third_attribute']).toEqual(456)
-        expect(read4).toBeNull()
+        expect(keys[0]).not.toBe(null)
+        expect(keys[1]).not.toBe(null)
+        expect(listing.length).toBe(2)
+        fromListing = []
+        fromListing[0] = findInArray listing, keys[0]
+        fromListing[1] = findInArray listing, keys[1]
+        expect(fromListing[0]).toBeDefined()
+        expect(fromListing[0]['some_attribute']).toEqual('abc')
+        expect(fromListing[1]).toBeDefined()
+        expect(fromListing[1]['some_attribute']).toEqual('xyz')
+        expect(read_documents[0]).toBeDefined()
+        expect(read_documents[0]['some_attribute']).toEqual('abc')
+        expect(read_documents[1]).toBeDefined()
+        expect(read_documents[1]['some_attribute']).toEqual('xyz')
+        expect(read_documents[1]).toBeDefined()
+        expect(read_documents[2]['second_attribute']).toEqual(123)
+        expect(read_documents[2]['third_attribute']).toEqual(456)
+        expect(read_documents[3]).toBeNull()
  
   parameterized('../backends/node_dirty_backend', 'node-dirty')
   parameterized('../backends/mongodb_backend', 'MongoDB')
@@ -156,3 +159,9 @@ describe "Common backend integration test:", ->
   checkError = (index, error) ->
     log.debug("error[#{index}]: #{error}")
     expect(error == null || error == undefined).toBe(true)
+
+  findInArray = (array, id) ->
+    for item in array
+      if (item._id.toString() == id.toString())
+        return item
+

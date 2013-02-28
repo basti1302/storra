@@ -72,7 +72,7 @@ describe "The request handler", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
     whenCallback(storage.read, 2).thenCallIt(requesthandler, undefined, {foo: 'bar'}, 'key')
     expectResponse 200
-    expectContent('{"foo":"bar","storra_key":"key"}')
+    expectContent('{"foo":"bar","_id":"key"}')
 
   it "says 404 if serving a document fails", ->
     requesthandler.retrieve(request, response, 'collection', 'key')

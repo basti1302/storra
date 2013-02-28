@@ -98,24 +98,17 @@ exports.options = function options(request, response) {
 
 // GET /collection
 exports.list = function list(request, response, collection) {
-  storage.list(collection, function(err, resultObject) {
+  storage.list(collection, function(err, result) {
     if (err) {
       log.error(err)
       exports.internalServerError(response)
     } else {
       writeJsonHeader(response, 200)
-      // probably pretty inefficient but somehow I can't get nstore queries using streams to work
-      var resultAsArray = []
-      for (var key in resultObject) {
-        var document = resultObject[key]
-        document.storra_key = key
-        resultAsArray.push(document)
-      }
-      response.write(JSON.stringify(resultAsArray))
-
-      // to write complete list as object instead of array
-      // response.write(JSON.stringify(results))
-
+      // TODO We need chunking/streaming here..., maybe like this
+      // The backend needs to call this callback for each chunk (say 20 or 100 documents)
+      // or even for each document separately. When there are no more documents to write
+      // to the response it will call the callback with null and we can call response.end()
+      response.write(JSON.stringify(result))
       response.end()
       log.debug("successfully listed " + collection)
     }
@@ -146,7 +139,9 @@ exports.retrieve = function retrieve(request, response, collection, key) {
       exports.internalServerError(response)
     } else {
       writeJsonHeader(response, 200)
-      document.storra_key = key
+      if (!document._id) {
+        document._id = key
+      }
       response.write(JSON.stringify(document))
       response.end()
       log.debug("successfully read " + collection + "/" + key)

@@ -1,7 +1,15 @@
 == Storra Core Features ==
-* Add "serious" backends, a whole lot of them, one after another...
+* Various improvements in MongoDB backend
+* Unit test for MongoDB backend
+ * Queries
+  - how to query RESTful?
+  - unified query language for all backends or individual queries for each backend?
+  - use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
+* Drop nstore backend completely
+* -> GitHub
+* Add more backends, a whole lot of them, one after another...
   - Caution: For hosted Storra, this is less important. The customer probably does not really care about the backend.
-  - MongoDB
+  - MongoDB: Done (well, sort of)
   - CouchDB?
   - Riak?
   - Redis?
@@ -9,11 +17,6 @@
     - MySQL
     - sqlite
     - Oracle??
- * Queries
-  - how to query RESTful?
-  - unified query language for all backends or individual queries for each backend?
-  - use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
-* Drop nstore backend completely
 * Get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
 * Use callback versions of node-dirty API everywhere
 log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated

@@ -1,3 +1,3 @@
 storra_port: 1302
 storra_bind_address: "127.0.0.1"
-storra_backend: './backends/node_dirty_backend'
+storra_backend: './backends/mongodb_backend'
