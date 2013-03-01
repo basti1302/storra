@@ -3,6 +3,8 @@
 # even lets node-dirty persist to disk.
 describe "Common backend integration test:", ->
 
+  TIMEOUT = 5000
+
   log = require('../log')
   Step = require('step')
 
@@ -54,6 +56,8 @@ describe "Common backend integration test:", ->
     create doc - update doc - read doc
     create doc - read doc - remove doc - read doc
     create doc - read doc - remove colleciton - read doc
+    create doc - remove doc - remove same doc again -> idempotent?
+    remove collection - remove same collection again -> idempotent? 
     >> with removeCollection in the beforeEach of all tests
     ###
 
@@ -63,9 +67,17 @@ describe "Common backend integration test:", ->
           () ->
             backend.removeCollection('test', this)
           ,
+          # remove collection again to check if removeCollection is idempotent
+          # (For example, MongoDB throws an error when removing a non-existing collection)
           (error) ->
             if (logIntermediateResults)
-              log.info('removeCollection -> error: ' + error)
+              log.info('removeCollection 1 -> error: ' + error)
+            errors.push error
+            backend.removeCollection('test', this)
+          ,
+          (error) ->
+            if (logIntermediateResults)
+              log.info('removeCollection 2 -> error: ' + error)
             errors.push error
             backend.create('test', {some_attribute: 'abc'}, this)
           ,
@@ -125,15 +137,22 @@ describe "Common backend integration test:", ->
               log.info('read -> error, doc, key: ' + error + ', ' + doc + ', ' + key)
             errors.push error
             read_documents[3] = doc
+            backend.closeConnection(this)
+          (error) ->
+            if (logIntermediateResults)
+              log.info('closeConnection -> error: ' + error)
+            errors.push error
             finished = true
         )
     
       waitsFor(() ->
         return finished
-      , "all steps finishing", 200)
+      , "all steps finishing", TIMEOUT)
       runs ->
-        checkError(i, error) for error, i in errors[0..errors.length - 2]
-        expect(errors[errors.length - 1]).toBe(404)
+        checkError(i, error) for error, i in errors[0..errors.length - 3]
+        log.debug("error[#{errors.length - 2}]: #{errors[errors.length - 2]}")
+        expect(errors[errors.length - 2]).toBe(404)
+        checkError(errors.length - 1, errors[errors.length - 1])
         expect(keys[0]).not.toBe(null)
         expect(keys[1]).not.toBe(null)
         expect(listing.length).toBe(2)

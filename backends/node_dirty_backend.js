@@ -88,6 +88,9 @@ exports.remove = function remove(collectionName, key, writeResponse) {
   writeResponse()
 }
 
+exports.closeConnection = function closeConnection(callback) {
+  callback(undefined)
+}
 
 /*
  * For write access only, use the (potentially faster) method openCollection.
