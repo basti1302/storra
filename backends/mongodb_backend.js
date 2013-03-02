@@ -15,6 +15,7 @@ var TIME_BETWEEN_RETRIES = 1000
 
 var log = require('../log')
 var MongoClient = require('mongodb').MongoClient
+var ObjectID = require('mongodb').ObjectID
 var Server = require('mongodb').Server
 var mongoClient = new MongoClient(new Server('localhost', 27017, {auto_connect: true, poolSize: 10}));
 
@@ -90,7 +91,7 @@ exports.read = function read(collectionName, key, writeResponse) {
       writeResponse(err, null, key)
     } else {
       var db = mongoClient.db(database)
-      db.collection(collectionName).findOne({_id: key}, function(err, doc) {
+      db.collection(collectionName).findOne({_id: new ObjectID(key) }, function(err, doc) {
         if (err) {
           writeResponse(err, null, null)
         } else {
@@ -119,7 +120,8 @@ exports.create = function create(collectionName, doc, writeResponse) {
         } else {
           // NOT mongoClient.close()
           if (result) {
-            writeResponse(err, result[0]['_id'])
+            var oid = result[0]['_id'].toHexString()
+            writeResponse(err, oid)
           } else {
             writeResponse(err, undefined)
           }
@@ -136,7 +138,7 @@ exports.update = function update(collectionName, key, doc, writeResponse) {
       writeResponse(err, undefined)
     } else {
       var db = mongoClient.db(database)
-      db.collection(collectionName).update({_id: key}, doc, {}, function(err, result) {
+      db.collection(collectionName).update({_id: new ObjectID(key)}, doc, {}, function(err, result) {
         // NOT mongoClient.close()
         writeResponse(err)
       })
@@ -151,7 +153,7 @@ exports.remove = function remove(collectionName, key, writeResponse) {
       writeResponse(err, undefined)
     } else {
       var db = mongoClient.db(database)
-      db.collection(collectionName).remove({_id: key}, function(err, numberOfRemovedDocs) {
+      db.collection(collectionName).remove({_id: new ObjectID(key)}, function(err, numberOfRemovedDocs) {
         log.debug("Removed " + numberOfRemovedDocs + " documents")
         // NOT mongoClient.close()
         writeResponse(err)
