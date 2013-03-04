@@ -163,6 +163,7 @@ exports.remove = function remove(collectionName, key, writeResponse) {
 }
 
 exports.closeConnection = function closeConnection(callback) {
+  log.debug("closing connection to MongoDB")
   mongoClient.close(function(err, result) {
     callback(err)
   })
