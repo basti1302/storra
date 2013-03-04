@@ -8,7 +8,6 @@ callback with an err != null/undefined
   - how to query RESTful?
   - unified query language for all backends or individual queries for each backend?
   - use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
-* Drop nstore backend completely - or reactivate it. Maybe the problems have gone away with node 0.8.21?
 * -> GitHub
 * Add more backends, a whole lot of them, one after another...
   - Caution: For hosted Storra, this is less important. The customer probably does not really care about the backend.
