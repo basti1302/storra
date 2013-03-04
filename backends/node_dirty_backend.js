@@ -89,6 +89,7 @@ exports.remove = function remove(collectionName, key, writeResponse) {
 }
 
 exports.closeConnection = function closeConnection(callback) {
+  log.debug("closeConnection has no effect with the node-dirty backend.")
   callback(undefined)
 }
 

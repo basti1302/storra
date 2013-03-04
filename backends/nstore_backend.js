@@ -17,7 +17,11 @@ exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
   withCollectionDo(collectionName, function(collection) {
     collection.all(function(err, results) {
-      writeResponse(err, results)
+      if (err) {
+        writeResponse(err, undefined)
+      } else {
+        writeResponse(err, objectToArray(results))
+      }
     })
   })  
 }
@@ -34,7 +38,7 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
   // For now, we just do a hard filesystem delete on the file.
   // Of course, this is bound to break on concurrent requests.
   var file = getDatabaseFilename(collectionName)
-  // [COLLECTION CACHING DISABLED] cache.remove(file)
+  cache.remove(file)
   fs.exists(file, function (exists) {
     if (exists) {
       fs.unlink(file, function (err) {
@@ -50,8 +54,12 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
 exports.read = function read(collectionName, key, writeResponse) {
   withCollectionDo(collectionName, function(collection) {
     log.debug("reading " + collectionName + "/" + key)
-    collection.get(key, function (err, doc, key) {
-      writeResponse(err, doc, key)
+    collection.get(key, function (err, doc, key2) {
+      if (err && err.message == 'Document does not exist for ' + key) {
+        writeResponse(404, null, key2)
+      } else {
+        writeResponse(err, doc, key2)
+      }
     })
   })
 }
@@ -92,26 +100,45 @@ exports.remove = function remove(collectionName, key, writeResponse) {
   })
 }
 
+exports.closeConnection = function closeConnection(callback) {
+  log.debug("closeConnection has no effect with the nStore backend.")
+  callback(undefined)
+}
+
 
 function withCollectionDo(collectionName, callback) {
   var name = getDatabaseFilename(collectionName)
-  // [COLLECTION CACHING DISABLED]
-  // var collection = cache.get(name)
-  // if (collection) {
-  //  log.debug('accessing collection ' + name + ' via cached collection object.') 
-  //  callback(collection)
-  // } else {
-  collection = nStore.new(name, function (err) {
-    // log.debug('collection ' + name + ' was not in cache.') 
-    if (err) { throw err }
-    log.debug("collection " + collectionName + " created/loaded.")
-    // cache.put(name, collection)
+  var collection = cache.get(name)
+   if (collection) {
+    log.debug('accessing collection ' + name + ' via cached collection object.') 
     callback(collection)
-  })
-  // [COLLECTION CACHING DISABLED] 
-  // }
+  } else {
+    collection = nStore.new(name, function (err) {
+      log.debug('collection ' + name + ' was not in cache.') 
+      if (err) { throw err }
+      log.debug("collection " + collectionName + " created/loaded.")
+      cache.put(name, collection)
+      callback(collection)
+    })
+  }
 }
 
 function getDatabaseFilename(collectionName) {
   return 'data/' + collectionName + '.nstore.db'
+}
+
+function objectToArray(obj) {
+  // nStore queries return an object not an array. Thus, we need to convert this
+  // to an array to conform to the contract of requesthandler.
+ 
+  // TODO For large results, this conversion might take some time
+  // Maybe we need to do it in chunks and call it recursively via process.nextTick 
+  // to give other events a chance to be processed in between. 
+  var arr = []
+  for (var key in obj) {
+    var doc = obj[key]
+    doc._id = key
+    arr.push(doc)
+  }
+  return arr
 }

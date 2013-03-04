@@ -173,6 +173,7 @@ describe "Common backend integration test:", ->
         expect(read_documents[3]).toBeNull()
  
   parameterized('../backends/node_dirty_backend', 'node-dirty')
+  parameterized('../backends/nstore_backend', 'nStore')
   parameterized('../backends/mongodb_backend', 'MongoDB')
 
   checkError = (index, error) ->
