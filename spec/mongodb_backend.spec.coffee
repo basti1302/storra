@@ -39,6 +39,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     ])
     mongoClient = jasmine.createSpyObj('mongoClient', [
       'db'
+      'open'
+      'close'
     ])
     mongoClient.db.andReturn(db)
     mongoClient._db = {
@@ -56,6 +58,52 @@ describe "The MongoDB backend (with mocked dependencies)", ->
       requires:
         'mongodb': mongodb
     writeResponse = jasmine.createSpy('writeResponse')
+
+  it "opens a connection if not yet connected", ->
+    mongoClient._db = { openCalled: false }
+    backend.list('collection', writeResponse)
+    expect(mongoClient.open).toHaveBeenCalled()
+
+  it "uses an existing connection without opening a second one", ->
+    mongoClient._db = { openCalled: true }
+    backend.list('collection', writeResponse)
+    expect(mongoClient.open).not.toHaveBeenCalled()
+
+  it "waits for a connection to be established if neccessary", ->
+    backend.setRetryParameters(3, 10)
+    shouldHaveConnected = false
+    runs ->
+      mongoClient._db = { openCalled: true, _state: 'connecting' }
+      backend.list('collection', writeResponse)
+      setTimeout(() ->
+        mongoClient._db._state = 'connected'
+      , 15)
+      setTimeout(() ->
+        shouldHaveConnected = true
+      , 25)
+    waitsFor(() ->
+      return shouldHaveConnected
+    , 3 * 10 + 100)
+    runs ->
+      expect(db.collection).toHaveBeenCalled()
+
+  it "does not wait infinitely long for a connection to be established", ->
+    backend.setRetryParameters(3, 10)
+    errorPassedToRequestHandler = null
+    writeResponse = (err) ->
+      errorPassedToRequestHandler = err
+    runs ->
+      mongoClient._db = { openCalled: true, _state: 'connecting' }
+      backend.list('collection', writeResponse)
+    waitsFor(() ->
+      return errorPassedToRequestHandler != null
+    , 3 * 10 + 100)
+    runs ->
+      expect(errorPassedToRequestHandler).toEqual('Could not connect to MongoDB after 3 retries, MongoClient is still in state connecting.')
+
+  it "closes the connection on demand", ->
+    backend.closeConnection(null)
+    expect(mongoClient.close).toHaveBeenCalledWith(jasmine.any(Function))
 
   it "lists a collection", ->
     backend.list('collection', writeResponse)
