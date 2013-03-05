@@ -5,8 +5,8 @@
  */
 
 // TODO Make that configurable via storra.mongodb.yml
-var MAX_RETRIES = 20
-var TIME_BETWEEN_RETRIES = 50
+var maxRetries = 20
+var timeBetweenRetries = 50
 // TODO Needs to be parameterizable from outside (yaml)
 var database = 'storra'
 
@@ -24,7 +24,7 @@ var ObjectID = require('mongodb').ObjectID
 // TODO Refactor accessing collection into a method of its own
 
 // TODO Also cache collection objects? But maybe it's cheap to access them every time
-// without using a cache (and probably safer)
+// without using a cache (and probably safer)?
 
 exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
@@ -32,26 +32,26 @@ exports.list = function list(collectionName, writeResponse) {
     if (err) {
       writeResponse(err, null)
     } else {
-      var db = mongoClient.db(database)
-
       // TODO: We need chunking/streaming here, to write back large result sets back to the
-      // response in chunks, probably calling ourselves recursivly per process.nextTick to allow
+      // response in smaller chunks or even doc by doc, probably calling ourselves recursivly per process.nextTick to allow
       // other requests to be handled in between the chunks, otherwise the listing of large collections
       // block here. This also influences how requesthandler writes the response, see the TODO there.
-      var results = [] 
-      db.collection(collectionName).find().each(function(err, doc) {
-        if (err) {
-          writeResponse(err, null)
-        } else if (doc) {
-          log.debug("listing entry: " + JSON.stringify(doc))
-          results.push(doc)
-        } else {
-          // db cursor exhausted, no more results -> write response
-          writeResponse(err, results)
-        }
+      withCollectionDo(mongoClient, collectionName, function(collection) {
+        var results = [] 
+        collection.find().each(function(err, doc) {
+          if (err) {
+            writeResponse(err, null)
+          } else if (doc) {
+            log.debug("listing entry: " + JSON.stringify(doc))
+            results.push(doc)
+          } else {
+            // db cursor exhausted, no more results -> write response
+            writeResponse(err, results)
+          }
+        })
       })
     }
-  })
+  }, writeResponse)
 }
 
 exports.removeCollection = function removeCollection(collectionName, writeResponse) {
@@ -60,9 +60,7 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
     if (err) {
       writeResponse(err)
     } else {
-      var db = mongoClient.db(database)
-      db.dropCollection(collectionName, function(err, result) {
-        // log.error(err.errmsg)
+      db().dropCollection(collectionName, function(err, result) {
         // help node-mongodb-native to be idempotent, that is, ignore error if
         // collection to be removed does not exist.
         if (err && (err.message === 'ns not found' || err.errmsg === 'ns not found')) {
@@ -72,7 +70,7 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
         writeResponse(err)
       })
     }
-  })
+  }, writeResponse)
 }
 
 exports.read = function read(collectionName, key, writeResponse) {
@@ -81,20 +79,21 @@ exports.read = function read(collectionName, key, writeResponse) {
     if (err) {
       writeResponse(err, null, key)
     } else {
-      var db = mongoClient.db(database)
-      db.collection(collectionName).findOne({_id: new ObjectID(key) }, function(err, doc) {
-        if (err) {
-          writeResponse(err, null, key)
-        } else {
-          if (doc) {
-            writeResponse(err, doc, key)
+      withCollectionDo(mongoClient, collectionName, function(collection) {
+        collection.findOne({_id: new ObjectID(key) }, function(err, doc) {
+          if (err) {
+            writeResponse(err, null, key)
           } else {
-            writeResponse(404, null, key)
+            if (doc) {
+              writeResponse(err, doc, key)
+            } else {
+              writeResponse(404, null, key)
+            }
           }
-        }
+        })
       })
     }
-  })
+  }, writeResponse)
 }
 
 exports.create = function create(collectionName, doc, writeResponse) {
@@ -103,21 +102,22 @@ exports.create = function create(collectionName, doc, writeResponse) {
     if (err) {
       writeResponse(err, null)
     } else {
-      var db = mongoClient.db(database)
-      db.collection(collectionName).insert(doc, {}, function(err, result) {
-        if (err) {
-          writeResponse(err, null)
-        } else {
-          if (result) {
-            var oid = result[0]['_id'].toHexString()
-            writeResponse(err, oid)
-          } else {
+      withCollectionDo(mongoClient, collectionName, function(collection) {
+        collection.insert(doc, {}, function(err, result) {
+          if (err) {
             writeResponse(err, null)
+          } else {
+            if (result) {
+              var oid = result[0]['_id'].toHexString()
+              writeResponse(err, oid)
+            } else {
+              writeResponse(err, null)
+            }
           }
-        }
+        })
       })
     }
-  })
+  }, writeResponse)
 }
 
 exports.update = function update(collectionName, key, doc, writeResponse) {
@@ -126,19 +126,20 @@ exports.update = function update(collectionName, key, doc, writeResponse) {
     if (err) {
       writeResponse(err, undefined)
     } else {
-      var db = mongoClient.db(database)
-      db.collection(collectionName).update({_id: new ObjectID(key)}, doc, {}, function(err, result) {
-        if (result == 0) {
-          writeResponse(404) 
-        } else if (result > 1) {
-          // This will never happen™.
-          writeResponse(new Error('An update changed ' + result + ' documents instead of one.'))
-        } else {
-          writeResponse(err)
-        }
+      withCollectionDo(mongoClient, collectionName, function(collection) {
+        collection.update({_id: new ObjectID(key)}, doc, {}, function(err, result) {
+          if (result == 0) {
+            writeResponse(404) 
+          } else if (result > 1) {
+            // This will never happen™.
+            writeResponse(new Error('An update changed ' + result + ' documents instead of one.'))
+          } else {
+            writeResponse(err)
+          }
+        })
       })
     }
-  })
+  }, writeResponse)
 }
 
 exports.remove = function remove(collectionName, key, writeResponse) {
@@ -147,13 +148,14 @@ exports.remove = function remove(collectionName, key, writeResponse) {
     if (err) {
       writeResponse(err, undefined)
     } else {
-      var db = mongoClient.db(database)
-      db.collection(collectionName).remove({_id: new ObjectID(key)}, function(err, numberOfRemovedDocs) {
-        log.debug("Removed " + numberOfRemovedDocs + " documents")
-        writeResponse(err)
+      withCollectionDo(mongoClient, collectionName, function(collection) {
+        collection.remove({_id: new ObjectID(key)}, function(err, numberOfRemovedDocs) {
+          log.debug("Removed " + numberOfRemovedDocs + " documents")
+          writeResponse(err)
+        })
       })
     }
-  })
+  }, writeResponse)
 }
 
 exports.closeConnection = function closeConnection(callback) {
@@ -163,8 +165,13 @@ exports.closeConnection = function closeConnection(callback) {
   })
 }
 
-function openConnection(callback, retriesLeft) {
-  // We are using a log of mongodb client lib's internals here
+exports.setRetryParameters = function(_maxRetries, _timeBetweenRetries) {
+  maxRetries = _maxRetries
+  timeBetweenRetries = _timeBetweenRetries
+}
+
+function openConnection(callback, writeResponse, retriesLeft) {
+  // TODO We are using a log of mongodb client lib's internals here
   // Can we do better than this?
   if (!mongoClient._db.openCalled) {
     // connection not yet or no longer open, connect now
@@ -175,25 +182,25 @@ function openConnection(callback, retriesLeft) {
     callback(null, mongoClient)
   } else if (mongoClient._db._state === 'connecting') {
     // connection has been requested before, but has not been fully established yet
-    // we wait and poll until the connection has been established or MAX_RETRIES is
+    // we wait and poll until the connection has been established or maxRetries is
     // reached
     log.warn('Connection to MongoDB is currently being established, waiting/retrying.')
     if (retriesLeft === undefined) {
-      retriesLeft = MAX_RETRIES
+      retriesLeft = maxRetries
     } 
     if (retriesLeft === 0) {
-      var err = 'Could not connect to MongoDB after ' + MAX_RETRIES + ' retries, MongoClient is still in state connecting.'
-      callback(err, null)
+      var err = 'Could not connect to MongoDB after ' + maxRetries + ' retries, MongoClient is still in state connecting.'
+      onConnectError(err, writeResponse)
     } else {
       // retry later/wait for connection to be established
       setTimeout(function() {
         log.debug('in retry callback')
-        openConnection(callback, retriesLeft - 1)
-      }, TIME_BETWEEN_RETRIES)
+        openConnection(callback, writeResponse, retriesLeft - 1)
+      }, timeBetweenRetries)
     }
   } else {
     var err = 'Unexpected state of MongoClient: Connection has already been opened but connection state is ' + mongoClient._db._state + '.'
-    callback(err, null)
+    onConnectError(err, writeResponse)
   }
 }
 
@@ -201,6 +208,18 @@ function reallyOpenConnection(callback) {
   mongoClient.open(function(err, mongoClient) {
     callback(err, mongoClient)
   })
+}
+
+function onConnectError(err, writeResponse) {
+  writeResponse(err)
+}
+
+function withCollectionDo(mongoClient, collectionName, callback) {
+  callback(db().collection(collectionName))
+}
+
+function db() {
+  return mongoClient.db(database)
 }
 
 /*
