@@ -7,7 +7,8 @@
 // TODO Make that configurable via storra.mongodb.yml
 var MAX_RETRIES = 20
 var TIME_BETWEEN_RETRIES = 50
-
+// TODO Needs to be parameterizable from outside (yaml)
+var database = 'storra'
 
 var log = require('../log')
 var MongoClient = require('mongodb').MongoClient
@@ -15,9 +16,6 @@ var Server = require('mongodb').Server
 var mongoClient = new MongoClient(new Server('localhost', 27017, {auto_connect: true, poolSize: 10}));
 var ObjectID = require('mongodb').ObjectID
 
-// TODO Needs to be parameterizable from outside (yaml)
-var database = 'storra'
-  
 // TODO Keep open mongodb connection. 
 // - when to close mongoClient.close()?? -> when node process exits, but
 //   - do we really need to do that ourselves or are the connections closed automatically
@@ -27,8 +25,6 @@ var database = 'storra'
 
 // TODO Also cache collection objects? But maybe it's cheap to access them every time
 // without using a cache (and probably safer)
-
-// TODO Unit Test
 
 exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
@@ -66,10 +62,12 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
     } else {
       var db = mongoClient.db(database)
       db.dropCollection(collectionName, function(err, result) {
+        // log.error(err.errmsg)
         // help node-mongodb-native to be idempotent, that is, ignore error if
         // collection to be removed does not exist.
-        if (err && err.errmsg === 'ns not found') {
-          err = null 
+        if (err && (err.message === 'ns not found' || err.errmsg === 'ns not found')) {
+          log.debug("Ignoring 'ns not found' error during removeCollection")
+          err = null
         }
         writeResponse(err)
       })
@@ -86,7 +84,7 @@ exports.read = function read(collectionName, key, writeResponse) {
       var db = mongoClient.db(database)
       db.collection(collectionName).findOne({_id: new ObjectID(key) }, function(err, doc) {
         if (err) {
-          writeResponse(err, null, null)
+          writeResponse(err, null, key)
         } else {
           if (doc) {
             writeResponse(err, doc, key)
@@ -103,18 +101,18 @@ exports.create = function create(collectionName, doc, writeResponse) {
   log.debug("creating item in " + collectionName)
   openConnection(function(err, mongoClient) {
     if (err) {
-      writeResponse(err, undefined)
+      writeResponse(err, null)
     } else {
       var db = mongoClient.db(database)
       db.collection(collectionName).insert(doc, {}, function(err, result) {
         if (err) {
-          writeResponse(err, undefined)
+          writeResponse(err, null)
         } else {
           if (result) {
             var oid = result[0]['_id'].toHexString()
             writeResponse(err, oid)
           } else {
-            writeResponse(err, undefined)
+            writeResponse(err, null)
           }
         }
       })

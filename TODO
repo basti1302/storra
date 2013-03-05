@@ -4,8 +4,7 @@
 strings, integers and whatnot. Check for all places where we throw an error or call a
 callback with an err != null/undefined
 * Various improvements in MongoDB backend
-* Unit test for MongoDB backend
- * Queries
+* Queries
   - how to query RESTful?
   - unified query language for all backends or individual queries for each backend?
   - use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
