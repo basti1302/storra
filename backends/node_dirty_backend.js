@@ -103,7 +103,7 @@ exports.closeConnection = function closeConnection(callback) {
  * For read access, use this method and pass a callback.
  */
 function withCollectionDo(collectionName, callback) {
-  _accessCollection(collectionName, callback)
+  accessCollection(collectionName, callback)
 }
 
 /*
@@ -112,11 +112,11 @@ function withCollectionDo(collectionName, callback) {
  * for the event 'load', however. See withCollectionDo.
  */
 function openCollection(collectionName) {
-  return _accessCollection(collectionName, undefined)
+  return accessCollection(collectionName, undefined)
 }
 
 /* To be used only from withCollectionDo and openCollection */
-function _accessCollection(collectionName, callback) {
+function accessCollection(collectionName, callback) {
   var name = getDatabaseFilename(collectionName)
   var collection = cache.get(name)
   if (collection) {

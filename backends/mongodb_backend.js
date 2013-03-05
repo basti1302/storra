@@ -11,9 +11,9 @@ var TIME_BETWEEN_RETRIES = 50
 
 var log = require('../log')
 var MongoClient = require('mongodb').MongoClient
-var ObjectID = require('mongodb').ObjectID
 var Server = require('mongodb').Server
 var mongoClient = new MongoClient(new Server('localhost', 27017, {auto_connect: true, poolSize: 10}));
+var ObjectID = require('mongodb').ObjectID
 
 // TODO Needs to be parameterizable from outside (yaml)
 var database = 'storra'
@@ -32,7 +32,7 @@ var database = 'storra'
 
 exports.list = function list(collectionName, writeResponse) {
   log.debug("listing " + collectionName)
-  _openConnection(function(err, mongoClient) {
+  openConnection(function(err, mongoClient) {
     if (err) {
       writeResponse(err, null)
     } else {
@@ -60,7 +60,7 @@ exports.list = function list(collectionName, writeResponse) {
 
 exports.removeCollection = function removeCollection(collectionName, writeResponse) {
   log.debug("removing collection " + collectionName)
-  _openConnection(function(err, mongoClient) {
+  openConnection(function(err, mongoClient) {
     if (err) {
       writeResponse(err)
     } else {
@@ -79,7 +79,7 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
 
 exports.read = function read(collectionName, key, writeResponse) {
   log.debug("reading item " + collectionName + "/" + key)
-  _openConnection(function(err, mongoClient) {
+  openConnection(function(err, mongoClient) {
     if (err) {
       writeResponse(err, null, key)
     } else {
@@ -101,7 +101,7 @@ exports.read = function read(collectionName, key, writeResponse) {
 
 exports.create = function create(collectionName, doc, writeResponse) {
   log.debug("creating item in " + collectionName)
-  _openConnection(function(err, mongoClient) {
+  openConnection(function(err, mongoClient) {
     if (err) {
       writeResponse(err, undefined)
     } else {
@@ -124,7 +124,7 @@ exports.create = function create(collectionName, doc, writeResponse) {
 
 exports.update = function update(collectionName, key, doc, writeResponse) {
   log.debug("updating item " + collectionName + "/" + key)
-  _openConnection(function(err, mongoClient) {
+  openConnection(function(err, mongoClient) {
     if (err) {
       writeResponse(err, undefined)
     } else {
@@ -145,7 +145,7 @@ exports.update = function update(collectionName, key, doc, writeResponse) {
 
 exports.remove = function remove(collectionName, key, writeResponse) {
   log.debug("removing item " + collectionName + "/" + key)
-  _openConnection(function(err, mongoClient) {
+  openConnection(function(err, mongoClient) {
     if (err) {
       writeResponse(err, undefined)
     } else {
@@ -165,13 +165,13 @@ exports.closeConnection = function closeConnection(callback) {
   })
 }
 
-function _openConnection(callback, retriesLeft) {
+function openConnection(callback, retriesLeft) {
   // We are using a log of mongodb client lib's internals here
   // Can we do better than this?
   if (!mongoClient._db.openCalled) {
     // connection not yet or no longer open, connect now
     log.debug('MongoDB not yet connected, establishing connection now.')
-    _reallyOpenConnection(callback)
+    reallyOpenConnection(callback)
   } else if (mongoClient._db._state === 'connected') {
     // connection already open, do nothing
     callback(null, mongoClient)
@@ -190,7 +190,7 @@ function _openConnection(callback, retriesLeft) {
       // retry later/wait for connection to be established
       setTimeout(function() {
         log.debug('in retry callback')
-        _openConnection(callback, retriesLeft - 1)
+        openConnection(callback, retriesLeft - 1)
       }, TIME_BETWEEN_RETRIES)
     }
   } else {
@@ -199,14 +199,14 @@ function _openConnection(callback, retriesLeft) {
   }
 }
 
-function _reallyOpenConnection(callback) {
+function reallyOpenConnection(callback) {
   mongoClient.open(function(err, mongoClient) {
     callback(err, mongoClient)
   })
 }
 
 /*
-function _dumpMongoState(label) {
+function dumpMongoState(label) {
   log.error(label)
   log.error('openCalled: ' + mongoClient._db.openCalled)
   log.error('_state    : ' + mongoClient._db._state)

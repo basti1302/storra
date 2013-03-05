@@ -1,4 +1,5 @@
 == Storra Core Features ==
+* Add more specs to spec/routing_integration.spec.coffee
 * Use Error objects with errno or custom http_status_code attribute instead of throwing
 strings, integers and whatnot. Check for all places where we throw an error or call a
 callback with an err != null/undefined
