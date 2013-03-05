@@ -4,13 +4,9 @@
  * Wrapper for MongoDB.
  */
 
-
-// TODO Remove all close calls
-
-
 // TODO Make that configurable via storra.mongodb.yml
-var MAX_RETRIES = 3 
-var TIME_BETWEEN_RETRIES = 1000
+var MAX_RETRIES = 20
+var TIME_BETWEEN_RETRIES = 50
 
 
 var log = require('../log')
@@ -49,14 +45,12 @@ exports.list = function list(collectionName, writeResponse) {
       var results = [] 
       db.collection(collectionName).find().each(function(err, doc) {
         if (err) {
-          // NOT mongoClient.close()
           writeResponse(err, null)
         } else if (doc) {
           log.debug("listing entry: " + JSON.stringify(doc))
           results.push(doc)
         } else {
           // db cursor exhausted, no more results -> write response
-          // NOT mongoClient.close()
           writeResponse(err, results)
         }
       })
@@ -77,7 +71,6 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
         if (err && err.errmsg === 'ns not found') {
           err = null 
         }
-        // NOT mongoClient.close()
         writeResponse(err)
       })
     }
@@ -95,7 +88,6 @@ exports.read = function read(collectionName, key, writeResponse) {
         if (err) {
           writeResponse(err, null, null)
         } else {
-          // NOT mongoClient.close()
           if (doc) {
             writeResponse(err, doc, key)
           } else {
@@ -118,7 +110,6 @@ exports.create = function create(collectionName, doc, writeResponse) {
         if (err) {
           writeResponse(err, undefined)
         } else {
-          // NOT mongoClient.close()
           if (result) {
             var oid = result[0]['_id'].toHexString()
             writeResponse(err, oid)
@@ -139,8 +130,14 @@ exports.update = function update(collectionName, key, doc, writeResponse) {
     } else {
       var db = mongoClient.db(database)
       db.collection(collectionName).update({_id: new ObjectID(key)}, doc, {}, function(err, result) {
-        // NOT mongoClient.close()
-        writeResponse(err)
+        if (result == 0) {
+          writeResponse(404) 
+        } else if (result > 1) {
+          // This will never happen™.
+          writeResponse(new Error('An update changed ' + result + ' documents instead of one.'))
+        } else {
+          writeResponse(err)
+        }
       })
     }
   })
@@ -155,7 +152,6 @@ exports.remove = function remove(collectionName, key, writeResponse) {
       var db = mongoClient.db(database)
       db.collection(collectionName).remove({_id: new ObjectID(key)}, function(err, numberOfRemovedDocs) {
         log.debug("Removed " + numberOfRemovedDocs + " documents")
-        // NOT mongoClient.close()
         writeResponse(err)
       })
     }

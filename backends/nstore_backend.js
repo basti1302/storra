@@ -26,6 +26,7 @@ exports.list = function list(collectionName, writeResponse) {
   })  
 }
 
+// Duplication: Same code as for nStore backend
 exports.removeCollection = function removeCollection(collectionName, writeResponse) {
   log.debug("removing collection " + collectionName)
 
@@ -42,6 +43,11 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
   fs.exists(file, function (exists) {
     if (exists) {
       fs.unlink(file, function (err) {
+        // ignore error number 34/ENOENT, might happen if a concurrent removeCollection alread killed the file
+        if (err && err.errno && err.errno === 34) {
+          log.warn("Ignoring: " + err)
+          err = undefined
+        }
         writeResponse(err)
       })
     } else {
@@ -58,6 +64,7 @@ exports.read = function read(collectionName, key, writeResponse) {
       if (err && err.message == 'Document does not exist for ' + key) {
         writeResponse(404, null, key2)
       } else {
+        doc._id = key2
         writeResponse(err, doc, key2)
       }
     })

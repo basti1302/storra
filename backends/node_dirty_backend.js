@@ -36,6 +36,11 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
   fs.exists(file, function (exists) {
     if (exists) {
       fs.unlink(file, function (err) {
+        // ignore error number 34/ENOENT, might happen if a concurrent removeCollection alread killed the file
+        if (err && err.errno && err.errno === 34) {
+          log.warn("Ignoring: " + err)
+          err = undefined
+        }
         writeResponse(err)
       })
     } else {
