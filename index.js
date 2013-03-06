@@ -34,6 +34,31 @@ try {
   log.warn('Could not find configuration file storra.yml, will use default configuration values.')
 }
 
+/* register various handlers */
+
+// TODO !!!Use domains to handle uncaught exceptions!!!!
+
+process.on('exit', function () {
+  shutdown()
+})
+
+// TODO handle more signals that are about terminating - which?
+var signals = ['SIGTERM', 'SIGINT']
+signals.forEach(function(signal) {
+  process.on(signal, function () {
+    console.log('Received signal ' + signal + ', terminating.');
+    process.exit(0)
+  })
+})
+
+function shutdown() {
+  log.info('Storra is about to terminate.')
+  server.shutdown()
+  // call backend#closeConnection here....
+  log.info('Good bye.')
+}
+
+
 var server = require("./server")
 
 log.info("using backend: " + global.storra_backend)

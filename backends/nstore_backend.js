@@ -109,7 +109,9 @@ exports.remove = function remove(collectionName, key, writeResponse) {
 
 exports.closeConnection = function closeConnection(callback) {
   log.debug("closeConnection has no effect with the nStore backend.")
-  callback(undefined)
+  if (callback && typeof callback == 'function') {
+    callback(undefined)
+  }
 }
 
 

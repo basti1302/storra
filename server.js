@@ -9,7 +9,7 @@ var http = require("http")
 var log = require("./log")
 var router = require("./router")
 
-function start() {
+exports.start = function() {
   function onRequest(request, response) {
     log.debug(request.method + ": " + request.url)
     router.route(request, response)
@@ -18,4 +18,7 @@ function start() {
   log.info("now listening on port " + global.storra_port + " (bind address: " + global.storra_bind_address + ")" + "...")
 }
 
-exports.start = start
+exports.shutdown = function() {
+  log.debug('server: shutting down')
+  router.shutdown()
+}

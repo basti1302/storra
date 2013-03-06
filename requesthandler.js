@@ -249,3 +249,16 @@ exports.notImplemented = function notImplemented(response) {
   writeNoContentHeader(response, 501)
   response.end()
 }
+
+exports.shutdown = function() {
+  log.debug('requesthandler: shutting down')
+  storage.closeConnection(function(err) {
+    if (err) {
+      log.error('An error occured when closing the database connection.')
+      log.error(err)
+      log.error(err.stack)
+    } else {
+      log.debug('Database connections have been closed.')
+    }
+  })
+}

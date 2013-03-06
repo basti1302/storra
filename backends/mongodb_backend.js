@@ -16,14 +16,7 @@ var Server = require('mongodb').Server
 var mongoClient = new MongoClient(new Server('localhost', 27017, {auto_connect: true, poolSize: 10}));
 var ObjectID = require('mongodb').ObjectID
 
-// TODO Keep open mongodb connection. 
-// - when to close mongoClient.close()?? -> when node process exits, but
-//   - do we really need to do that ourselves or are the connections closed automatically
-//   - if we need to do it, how to?
-
-// TODO Refactor accessing collection into a method of its own
-
-// TODO Also cache collection objects? But maybe it's cheap to access them every time
+// Also cache collection objects? But maybe it's cheap to access them every time
 // without using a cache (and probably safer)?
 
 exports.list = function list(collectionName, writeResponse) {
@@ -137,7 +130,10 @@ exports.remove = function remove(collectionName, key, writeResponse) {
 exports.closeConnection = function closeConnection(callback) {
   log.debug("closing connection to MongoDB")
   mongoClient.close(function(err, result) {
-    callback(err)
+    // TODO Introduce this check in all other backends
+    if (callback && typeof callback == 'function') {
+      callback(err)
+    }
   })
 }
 

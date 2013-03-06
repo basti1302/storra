@@ -57,6 +57,11 @@ exports.route = function route(request, response) {
   })
 }
 
+exports.shutdown = function() {
+  log.debug('router: shutting down')
+  requesthandler.shutdown()
+}
+
 // this might be too simplistic - we assume that there are at most two path
 // parameters and they are hardcoded to be collection and key. However,
 // currently we don't need more, it seems.
