@@ -1,3 +1,13 @@
-storra_port: 1302
-storra_bind_address: "127.0.0.1"
-storra_backend: './backends/mongodb_backend'
+# Use this file to configure Storra. The values which are commented out here
+# denote the default values. 
+
+core:
+  #port: 1302
+  #bind_address: "0.0.0.0"
+  #backend: "./backends/node_dirty_backend"
+  backend: "./backends/mongodb_backend"
+
+#mongodb:
+  #connection_max_retries: 20
+  #connection_time_between_retries: 50
+  #database: "storra"

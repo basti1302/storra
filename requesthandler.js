@@ -11,7 +11,7 @@
 var url = require("url")
 
 var log = require("./log")
-var storage = require(global.storra_backend)
+var storage = require(global.storra_configuration.core.backend)
 
 function endsWith(string, suffix) {
   return string.indexOf(suffix, string.length - suffix.length) !== -1;
@@ -41,7 +41,7 @@ function fullUrl(request)
   if (host.indexOf(':' >= 0)) {
     portInUrl = ''
   } else {
-    var port = global.storra_port
+    var port = global.storra_configuration.core.port
     portInUrl = (protocol == 'http' && port == 80) || (protocol == 'https' && port == 443) ? '' : ':' + port
   }
   var fullUrl = protocol + '://' + host + portInUrl + url.parse(request.url).path

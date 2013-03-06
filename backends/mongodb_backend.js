@@ -4,13 +4,26 @@
  * Wrapper for MongoDB.
  */
 
-// TODO Make that configurable via storra.mongodb.yml
-var maxRetries = 20
-var timeBetweenRetries = 50
-// TODO Needs to be parameterizable from outside (yaml)
-var database = 'storra'
-
 var log = require('../log')
+
+global.storra_configuration.mergeDefaults({
+  mongodb: {
+    connection_max_retries: 20,
+    connection_time_between_retries: 50,
+    database: 'storra'
+  }
+})
+log.debug('MongoDB configuration, merged with defaults:\n' + JSON.stringify(global.storra_configuration.mongodb))
+var maxRetries          = global.storra_configuration.mongodb.connection_max_retries
+var timeBetweenRetries  = global.storra_configuration.mongodb.connection_time_between_retries
+var database            = global.storra_configuration.mongodb.database
+
+/*
+log.debug('MongoDB: maxRetries = ' + maxRetries)
+log.debug('MongoDB: timeBetweenRetries = ' + timeBetweenRetries)
+log.debug('MongoDB: database = ' + database)
+*/
+
 var MongoClient = require('mongodb').MongoClient
 var Server = require('mongodb').Server
 var mongoClient = new MongoClient(new Server('localhost', 27017, {auto_connect: true, poolSize: 10}));
