@@ -18,12 +18,6 @@ var maxRetries          = global.storra_config.mongodb.connection_max_retries
 var timeBetweenRetries  = global.storra_config.mongodb.connection_time_between_retries
 var database            = global.storra_config.mongodb.database
 
-/*
-log.debug('MongoDB: maxRetries = ' + maxRetries)
-log.debug('MongoDB: timeBetweenRetries = ' + timeBetweenRetries)
-log.debug('MongoDB: database = ' + database)
-*/
-
 var MongoClient = require('mongodb').MongoClient
 var Server = require('mongodb').Server
 var mongoClient = new MongoClient(new Server('localhost', 27017, {auto_connect: true, poolSize: 10}));
@@ -208,6 +202,7 @@ function db() {
 }
 
 /*
+// keep this around for debugging purposes
 function dumpMongoState(label) {
   log.error(label)
   log.error('openCalled: ' + mongoClient._db.openCalled)
