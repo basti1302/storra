@@ -3,7 +3,7 @@
 /*
  * request handler:
  * - reads request body data (for POST and PUT)
- * - executes the requested storage action
+ * - executes the requested backend action
  * - writes the response
  * - has methods for writing http error responses (4xx, 5xx)
  */
@@ -11,7 +11,7 @@
 var url = require("url")
 
 var log = require("./log")
-var storage = require(global.storra_config.core.backend)
+var backend = require(global.storra_config.core.backend)
 
 function endsWith(string, suffix) {
   return string.indexOf(suffix, string.length - suffix.length) !== -1;
@@ -98,7 +98,7 @@ exports.options = function options(request, response) {
 
 // GET /collection
 exports.list = function list(request, response, collection) {
-  storage.list(collection, function(err, result) {
+  backend.list(collection, function(err, result) {
     if (err) {
       log.error(err)
       exports.internalServerError(response)
@@ -117,7 +117,7 @@ exports.list = function list(request, response, collection) {
 
 // DELETE /collection
 exports.removeCollection = function removeCollection(request, response, collection) {
-  storage.removeCollection(collection, function(err) {
+  backend.removeCollection(collection, function(err) {
     if (err) {
       log.error(err.stack)
       exports.internalServerError(response)
@@ -131,7 +131,7 @@ exports.removeCollection = function removeCollection(request, response, collecti
 
 // GET /collection/key
 exports.retrieve = function retrieve(request, response, collection, key) {
-  storage.read(collection, key, function(err, document, key) {
+  backend.read(collection, key, function(err, document, key) {
     if (err === 404) {
       exports.notFound(response)
     } else if (err) {
@@ -149,9 +149,9 @@ exports.retrieve = function retrieve(request, response, collection, key) {
 // POST /collection
 exports.create = function create(request, response, collection) {
   createOrUpdate(request, response, function(bodyObject) {
-    storage.create(collection, bodyObject, function(err, key) {
+    backend.create(collection, bodyObject, function(err, key) {
       if (err) {
-        log.error('Error in storage.create: ' + err)
+        log.error('Error in backend.create: ' + err)
         exports.internalServerError(response)
       } else {
         writeNoContentHeader(response, 201, {"Location": fullUrl(request) + collection + '/' + key})
@@ -165,7 +165,7 @@ exports.create = function create(request, response, collection) {
 // PUT /collection/key
 exports.update = function update(request, response, collection, key) {
   createOrUpdate(request, response, function(bodyObject) {
-    storage.update(collection, key, bodyObject, function(err) {
+    backend.update(collection, key, bodyObject, function(err) {
       if (err) {
         if (err == 404) {
           exports.notFound(response)
@@ -203,7 +203,7 @@ function createOrUpdate(request, response, upsert) {
 
 // DELETE /collection/key
 exports.remove = function remove(request, response, collection, key) {
-  storage.remove(collection, key, function(err) {
+  backend.remove(collection, key, function(err) {
     if (err) {
       log.error(err.stack)
       exports.internalServerError(response)
@@ -252,7 +252,7 @@ exports.notImplemented = function notImplemented(response) {
 
 exports.shutdown = function() {
   log.debug('requesthandler: shutting down')
-  storage.closeConnection(function(err) {
+  backend.closeConnection(function(err) {
     if (err) {
       log.error('An error occured when closing the database connection.')
       log.error(err)

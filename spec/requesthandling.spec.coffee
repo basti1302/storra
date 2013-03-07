@@ -1,16 +1,16 @@
 describe "The request handler", ->
 
   sandbox = null
-  storage = null
+  backend = null
   requesthandler = null
   request = null
   response = null
 
   beforeEach ->
-    global.storra_config = {core: {backend: './storage'}}
+    global.storra_config = {core: {backend: './backend'}}
 
     sandbox = require 'sandboxed-module'
-    storage = jasmine.createSpyObj('storage', [
+    backend = jasmine.createSpyObj('backend', [
       'list'
       'removeCollection'
       'read'
@@ -31,7 +31,7 @@ describe "The request handler", ->
 
     requesthandler = sandbox.require '../requesthandler',
       requires:
-        './storage': storage
+        './backend': backend
 
   it "responds to root with 400 Bad Request", ->
     requesthandler.root(request, response)
@@ -46,50 +46,50 @@ describe "The request handler", ->
 
   it "serves a collection of documents", ->
     requesthandler.list(request, response, 'collection')
-    expect(storage.list).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    whenCallback(storage.list, 1).thenCallIt(requesthandler, undefined, [])
+    expect(backend.list).toHaveBeenCalledWith 'collection', jasmine.any(Function)
+    whenCallback(backend.list, 1).thenCallIt(requesthandler, undefined, [])
     expectResponse 200
     expectContent()
 
   it "says 500 if listing the collection fails", ->
     requesthandler.list(request, response, 'collection')
-    whenCallback(storage.list, 1).thenCallIt(requesthandler, 'error', [])
+    whenCallback(backend.list, 1).thenCallIt(requesthandler, 'error', [])
     expect500()
 
   it "removes a collection", ->
     requesthandler.removeCollection(request, response, 'collection')
-    expect(storage.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    whenCallback(storage.removeCollection, 1).thenCallIt(requesthandler, undefined)
+    expect(backend.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
+    whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler, undefined)
     expectResponse 204
     expectNoContent()
 
   it "says 500 if removing a collection fails", ->
     requesthandler.removeCollection(request, response, 'collection')
-    expect(storage.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    whenCallback(storage.removeCollection, 1).thenCallIt(requesthandler, 'error')
+    expect(backend.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
+    whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler, 'error')
     expect500()
 
   it "serves a document", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(storage.read, 2).thenCallIt(requesthandler, undefined, {foo: 'bar', _id: 'key'}, 'key')
+    whenCallback(backend.read, 2).thenCallIt(requesthandler, undefined, {foo: 'bar', _id: 'key'}, 'key')
     expectResponse 200
     expectContent('{"foo":"bar","_id":"key"}')
 
   it "says 404 if serving a document fails", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(storage.read, 2).thenCallIt(requesthandler, 404, null, 'key')
+    whenCallback(backend.read, 2).thenCallIt(requesthandler, 404, null, 'key')
     expect404()
     
   it "says 500 if serving a document fails for unknown reasons", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(storage.read, 2).thenCallIt(requesthandler, 'error', {}, 'key')
+    whenCallback(backend.read, 2).thenCallIt(requesthandler, 'error', {}, 'key')
     expect500()
 
   it "creates a document", ->
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
-    expect(storage.create).toHaveBeenCalled()
-    whenCallback(storage.create, 2).thenCallIt(requesthandler, undefined, 'key')
+    expect(backend.create).toHaveBeenCalled()
+    whenCallback(backend.create, 2).thenCallIt(requesthandler, undefined, 'key')
     expectResponse 201
     # TODO Check if location header is written correctly
     #expect(response.writeHead).toHaveBeenCalledWith("Location"... )
@@ -98,38 +98,38 @@ describe "The request handler", ->
   it "says 500 if creating a document fails", ->
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
-    whenCallback(storage.create, 2).thenCallIt(requesthandler, 'error', 'key')
+    whenCallback(backend.create, 2).thenCallIt(requesthandler, 'error', 'key')
     expect500()
 
   it "updates a document", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    expect(storage.update).toHaveBeenCalled()
-    whenCallback(storage.update, 3).thenCallIt(requesthandler, undefined)
+    expect(backend.update).toHaveBeenCalled()
+    whenCallback(backend.update, 3).thenCallIt(requesthandler, undefined)
     expectResponse 204
     expectNoContent()
 
   it "says 404 if the document is not found during update", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    whenCallback(storage.update, 3).thenCallIt(requesthandler, 404)
+    whenCallback(backend.update, 3).thenCallIt(requesthandler, 404)
     expect404()
 
   it "says 500 if updating a document fails", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    whenCallback(storage.update, 3).thenCallIt(requesthandler, 'error')
+    whenCallback(backend.update, 3).thenCallIt(requesthandler, 'error')
     expect500()
 
   it "deletes a document", ->
     requesthandler.remove(request, response, 'collection', 'key')
-    whenCallback(storage.remove, 2).thenCallIt(requesthandler, undefined)
+    whenCallback(backend.remove, 2).thenCallIt(requesthandler, undefined)
     expectResponse 204
     expectNoContent()
 
   it "says 500 if deleting  a document fails", ->
     requesthandler.remove(request, response, 'collection', 'key')
-    whenCallback(storage.remove, 2).thenCallIt(requesthandler, 'error')
+    whenCallback(backend.remove, 2).thenCallIt(requesthandler, 'error')
     expect500()
 
   it "handles bad requests", ->
