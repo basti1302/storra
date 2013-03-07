@@ -37,6 +37,6 @@ function shutdown() {
   log.info('Good bye.')
 }
 
-log.info("using backend: " + global.storra_configuration.core.backend)
+log.info("using backend: " + global.storra_config.core.backend)
 
 server.start()

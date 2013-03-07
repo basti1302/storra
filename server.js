@@ -14,8 +14,8 @@ exports.start = function() {
     log.debug(request.method + ": " + request.url)
     router.route(request, response)
   }
-  var port = global.storra_configuration.core.port
-  var bindAddress = global.storra_configuration.core.bind_address
+  var port = global.storra_config.core.port
+  var bindAddress = global.storra_config.core.bind_address
 
   http.createServer(onRequest).listen(port, bindAddress)
   log.info("Storra is now listening on port " + port + " (bind address: " + bindAddress + ")" + "...")

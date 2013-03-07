@@ -6,17 +6,17 @@
 
 var log = require('../log')
 
-global.storra_configuration.mergeDefaults({
+global.storra_config.mergeDefaults({
   mongodb: {
     connection_max_retries: 20,
     connection_time_between_retries: 50,
     database: 'storra'
   }
 })
-log.debug('MongoDB configuration, merged with defaults:\n' + JSON.stringify(global.storra_configuration.mongodb))
-var maxRetries          = global.storra_configuration.mongodb.connection_max_retries
-var timeBetweenRetries  = global.storra_configuration.mongodb.connection_time_between_retries
-var database            = global.storra_configuration.mongodb.database
+log.debug('MongoDB configuration, merged with defaults:\n' + JSON.stringify(global.storra_config.mongodb))
+var maxRetries          = global.storra_config.mongodb.connection_max_retries
+var timeBetweenRetries  = global.storra_config.mongodb.connection_time_between_retries
+var database            = global.storra_config.mongodb.database
 
 /*
 log.debug('MongoDB: maxRetries = ' + maxRetries)

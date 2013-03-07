@@ -36,10 +36,10 @@ function ConfigurationReader() {
     log.debug('configuration (read from ' + filename + ', merged with defaults):\n' + JSON.stringify(configuration))
 
     /* make configuration object globally visible */
-    global.storra_configuration = configuration
+    global.storra_config = configuration
     var merge = recursiveMerge
-    global.storra_configuration.mergeDefaults = function(defaults) {
-      merge(global.storra_configuration, defaults)
+    global.storra_config.mergeDefaults = function(defaults) {
+      merge(global.storra_config, defaults)
     }
   }
 

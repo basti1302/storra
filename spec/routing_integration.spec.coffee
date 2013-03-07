@@ -5,7 +5,7 @@ describe "Integration test: storra", ->
   response = null
 
   beforeEach ->
-    global.storra_backend = './backends/node_dirty_backend'
+    global.storra_config = {core: {backend: './backends/node_dirty_backend'}}
     router = require '../router' 
 
     request = {

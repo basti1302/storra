@@ -7,6 +7,8 @@ describe "The request handler", ->
   response = null
 
   beforeEach ->
+    global.storra_config = {core: {backend: './storage'}}
+
     sandbox = require 'sandboxed-module'
     storage = jasmine.createSpyObj('storage', [
       'list'
@@ -27,7 +29,6 @@ describe "The request handler", ->
       'end'
     ])
 
-    global.storra_backend = './storage'
     requesthandler = sandbox.require '../requesthandler',
       requires:
         './storage': storage

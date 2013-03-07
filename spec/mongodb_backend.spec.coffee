@@ -13,6 +13,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
   writeResponse = null
 
   beforeEach ->
+    (new (require('./test_config_reader'))()).createGlobalConfig()
+
     sandbox = require 'sandboxed-module'
     
     cursor = jasmine.createSpyObj('cursor', [

@@ -23,6 +23,7 @@ describe "Common backend integration test:", ->
       waitForStepsToFinish = () -> waitsFor(standardWaitsFor, "all steps finishing", TIMEOUT)
 
       beforeEach ->
+        (new (require('./test_config_reader'))()).createGlobalConfig()
         backend = require backend_module
         finished = false
         errors = []
