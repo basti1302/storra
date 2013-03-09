@@ -177,7 +177,7 @@ describe "The request handler", ->
 
   expect404 = () ->
     expectResponse 404
-    expectContent('The requested resource was not found.')
+    expectContent('The requested resource was not found. ')
 
   expect500 = () ->
     expectResponse 500

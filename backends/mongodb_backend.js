@@ -137,7 +137,6 @@ exports.remove = function remove(collectionName, key, writeResponse) {
 exports.closeConnection = function closeConnection(callback) {
   log.debug("closing connection to MongoDB")
   mongoClient.close(function(err, result) {
-    // TODO Introduce this check in all other backends
     if (callback && typeof callback == 'function') {
       callback(err)
     }

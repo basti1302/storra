@@ -154,7 +154,7 @@ exports.create = function create(request, response, collection) {
         log.error('Error in backend.create: ' + err)
         exports.internalServerError(response)
       } else {
-        writeNoContentHeader(response, 201, {"Location": fullUrl(request) + collection + '/' + key})
+        writeNoContentHeader(response, 201, {"Location": fullUrl(request) + key})
         response.end()
         log.debug("successfully inserted entry into " + collection + " -> " + key)
       }
@@ -228,10 +228,13 @@ exports.badRequest = function badRequest(response, info) {
 }
 
 // 404
-exports.notFound = function notFound(response) {
+exports.notFound = function notFound(response, additionalInfo) {
   log.info("404 Not Found")
   writePlainTextHeader(response, 404)
-  response.write("The requested resource was not found.")
+  response.write("The requested resource was not found. ")
+  if (additionalInfo) {
+    response.write(additionalInfo)
+  }
   response.end()
 }
 

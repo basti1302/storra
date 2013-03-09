@@ -1,4 +1,6 @@
 == Storra Core Features ==
+* PUT/POST - what happens if no body is received? Will the requests time out? Or will they just keep the
+  connection forever? Also write integration test for this (routing_integration.spec.coffee)
 * Add more specs to spec/routing_integration.spec.coffee
 * Use Error objects with errno or custom http_status_code attribute instead of throwing
 strings, integers and whatnot. Check for all places where we throw an error or call a
@@ -11,6 +13,7 @@ callback with an err != null/undefined
   - unified query language for all backends or individual queries for each backend?
   - use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
 * -> GitHub
+* Collections are always created on the fly, even if we GET an non-existing collection, thus, 200 is the responsee for GET /non-existing-collection, which seems odd. 404 would be more appropriate. Not sure how well backends support this, they also seem to create any accessed collection on the fly.
 * Cucumber acceptance tests directly for Storra, not via aboco
 * Add more backends, a whole lot of them, one after another...
   - Caution: For hosted Storra, this is less important. The customer probably does not really care about the backend.
@@ -22,6 +25,7 @@ callback with an err != null/undefined
     - MySQL
     - sqlite
     - Oracle??
+* Enable HTTP caching (Last-Modified-Header, ETags etc.)
 * Get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
 * Use callback versions of node-dirty API everywhere
 * log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
