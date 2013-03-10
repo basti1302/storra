@@ -33,7 +33,7 @@ function ConfigurationReader() {
   
     /* use defaults for configuration values that have not been configured */
     recursiveMerge(configuration, getDefaults())
-    log.debug('configuration (read from ' + filename + ', merged with defaults):\n' + JSON.stringify(configuration))
+    log.debug('Core configuration (read from ' + filename + ', merged with defaults):\n' + JSON.stringify(configuration))
 
     /* make configuration object globally visible */
     global.storra_config = configuration
