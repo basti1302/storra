@@ -1,6 +1,7 @@
 == Storra Core Features ==
 * PUT/POST - what happens if no body is received? Will the requests time out? Or will they just keep the
   connection forever? Also write integration test for this (routing_integration.spec.coffee)
+  I'm pretty sure that the requests emits the 'end' handler in any case, if the client has *finished sending* the requst, no matter if a the request had a body, or not. But: What happens if the client does not finish sending the request (dies in the middle of sending the body, for example)? Does node.js time out cleanly?
 * Add more specs to spec/routing_integration.spec.coffee
 * Use Error objects with errno or custom http_status_code attribute instead of throwing
 strings, integers and whatnot. Check for all places where we throw an error or call a

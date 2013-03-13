@@ -18,8 +18,12 @@ exports.list = function list(collectionName, writeResponse) {
   withCollectionDo(collectionName, function(collection) {
     var results = []
     collection.forEach(function(key, doc) {
-      doc._id = key
-      results.push(doc)
+      if (doc) {
+        doc._id = key
+        results.push(doc)
+      } else {
+        log.warn("node-dirty backend handed empty doc to callback, key: " + key)
+      }
     })
     writeResponse(undefined, results)
   })
@@ -31,11 +35,11 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
 
   // For now, we just do a hard filesystem delete on the file.
   // Of course, this is bound to break on concurrent requests.
-  var file = getDatabaseFilename(collectionName)
-  cache.remove(file)
-  fs.exists(file, function (exists) {
+  var databaseFilename = getDatabaseFilename(collectionName)
+  cache.remove(databaseFilename)
+  fs.exists(databaseFilename, function (exists) {
     if (exists) {
-      fs.unlink(file, function (err) {
+      fs.unlink(databaseFilename, function (err) {
         // ignore error number 34/ENOENT, might happen if a concurrent removeCollection alread killed the file
         if (err && err.errno && err.errno === 34) {
           log.warn("Ignoring: " + err)
@@ -44,7 +48,7 @@ exports.removeCollection = function removeCollection(collectionName, writeRespon
         writeResponse(err)
       })
     } else {
-      log.debug(file + " does not exist, doing nothing.")
+      log.debug(databaseFilename + " does not exist, doing nothing.")
       writeResponse(null)
     }
   })
@@ -56,6 +60,7 @@ exports.read = function read(collectionName, key, writeResponse) {
     var doc = collection.get(key) 
     if (doc) {
       doc._id = key
+      log.debug("read result: " + JSON.stringify(doc))
       writeResponse(undefined, doc, key)
     } else {
       writeResponse(404, null, key)
@@ -73,11 +78,12 @@ exports.create = function create(collectionName, doc, writeResponse) {
 }
 
 exports.update = function update(collectionName, key, doc, writeResponse) {
-  log.debug("updating item " + collectionName + "/" + key)
+  log.debug("updating item " + collectionName + "/" + key + ": " + JSON.stringify(doc))
   withCollectionDo(collectionName, function(collection) {
     // call get to make sure the key exist, otherwise we need to 404
     var existingDoc = collection.get(key)
     if (existingDoc) { 
+      log.debug("now really updating item " + collectionName + "/" + key + ": " + JSON.stringify(doc))
       collection.set(key, doc)
       writeResponse(undefined)
     } else {
@@ -119,20 +125,20 @@ function openCollection(collectionName) {
 
 /* To be used only from withCollectionDo and openCollection */
 function accessCollection(collectionName, callback) {
-  var name = getDatabaseFilename(collectionName)
-  var collection = cache.get(name)
+  var databaseFilename = getDatabaseFilename(collectionName)
+  var collection = cache.get(databaseFilename)
   if (collection) {
-    log.debug('accessing collection ' + name + ' via cached collection object.') 
+    log.debug('accessing collection ' + databaseFilename + ' via cached collection object.') 
     if (callback) {
       callback(collection)
     }
     return collection
   } else {
     log.debug("collection " + collectionName + " was not in cache.")
-    collection = dirty.Dirty(name)
+    collection = dirty.Dirty(databaseFilename)
     collection.on('load', function() {
       log.debug("collection " + collectionName + " created/loaded.")
-      cache.put(name, collection)
+      cache.put(databaseFilename, collection)
       if (callback) {
         callback(collection)
       }

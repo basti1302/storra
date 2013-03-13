@@ -5,7 +5,7 @@ describe "Common backend integration test:", ->
 
   TIMEOUT = 5000
 
-  log = require('../log')
+  log = require('../../log')
   Step = require('step')
 
   logIntermediateResults = true
@@ -23,7 +23,7 @@ describe "Common backend integration test:", ->
       waitForStepsToFinish = () -> waitsFor(standardWaitsFor, "all steps finishing", TIMEOUT)
 
       beforeEach ->
-        (new (require('./test_config_reader'))()).createGlobalConfig()
+        (new (require('../test_config_reader'))()).createGlobalConfig()
         backend = require backend_module
         finished = false
         errors = []
@@ -358,78 +358,6 @@ describe "Common backend integration test:", ->
           expect(read_document_after_remove).toBeNull()
 
 
-      xit "does stuff", ->
-        runs ->
-          Step(
-            () ->
-              console.log("first step")
-              backend.list('test', this)
-            ,
-            (error, results) ->
-              if (logIntermediateResults)
-                log.info('list -> error, results: ' + error + ', ' + JSON.stringify(results))
-              errors.push error
-              console.log("second step")
-              finished = true
-          )
-        waitForStepsToFinish()
-        runs ->
-          expectNoErrors()
-
-      xit "does stuff", ->
-        runs ->
-          Step(
-            () ->
-              console.log("first step")
-              backend.list('test', this)
-            ,
-            (error, results) ->
-              if (logIntermediateResults)
-                log.info('list -> error, results: ' + error + ', ' + JSON.stringify(results))
-              errors.push error
-              console.log("second step")
-              finished = true
-          )
-        waitForStepsToFinish()
-        runs ->
-          expectNoErrors()
-
-      xit "does stuff", ->
-        runs ->
-          Step(
-            () ->
-              console.log("first step")
-              backend.list('test', this)
-            ,
-            (error, results) ->
-              if (logIntermediateResults)
-                log.info('list -> error, results: ' + error + ', ' + JSON.stringify(results))
-              errors.push error
-              console.log("second step")
-              finished = true
-          )
-        waitForStepsToFinish()
-        runs ->
-          expectNoErrors()
-
-      xit "does stuff", ->
-        runs ->
-          Step(
-            () ->
-              console.log("first step")
-              backend.list('test', this)
-            ,
-            (error, results) ->
-              if (logIntermediateResults)
-                log.info('list -> error, results: ' + error + ', ' + JSON.stringify(results))
-              errors.push error
-              console.log("second step")
-              finished = true
-          )
-        waitForStepsToFinish()
-        runs ->
-          expectNoErrors()
-
       ###
       HELPER FUNCTIONS
       ###
@@ -450,7 +378,8 @@ describe "Common backend integration test:", ->
   Call all parameterized tests
   ###
 
-  parameterized('../backends/node_dirty_backend', 'node-dirty')
-  parameterized('../backends/nstore_backend', 'nStore')
-  parameterized('../backends/mongodb_backend', 'MongoDB')
+  parameterized('../../backends/node_dirty_backend', 'node-dirty')
+  parameterized('../../backends/nstore_backend', 'nStore')
+  # for the MongoDB integration tests, the MongoDB has to run (obviously)
+  parameterized('../../backends/mongodb_backend', 'MongoDB')
 

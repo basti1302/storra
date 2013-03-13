@@ -27,7 +27,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
       'exists'
       'unlink'
     ])
-    backend = sandbox.require '../backends/node_dirty_backend',
+    backend = sandbox.require '../../backends/node_dirty_backend',
       requires:
         'dirty': dirty
         'fs': fs

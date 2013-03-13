@@ -1,9 +1,13 @@
-describe "Integration test: storra", ->
+describe "Integration from routing to backend test: storra", ->
 
-  log = require('../log')
+  log = require('../../log')
   Step = require('step')
 
   baseUrl = 'http://localhost:1302'
+  collectionName = 'integration_test_routing2backend'
+  collectionUrl = '/' + collectionName
+  keyName = 'key'
+  keyUrl = collectionUrl + '/' + keyName
 
   router = null
   requests = []
@@ -12,11 +16,23 @@ describe "Integration test: storra", ->
   beforeEach ->
     # TODO parameterize this test like backend_integration spec with all possible backends
     global.storra_config = {core: {backend: './backends/node_dirty_backend'}}
-    router = require '../router'
+    router = require '../../router'
 
     requests = []
     responses = []
- 
+
+    initialCleanupRequest = null
+    initialCleanupResponse = null
+    runs ->
+      initialCleanupRequest = new MockRequest('DELETE', collectionUrl)
+      initialCleanupResponse = new MockResponse()
+      router.route initialCleanupRequest, initialCleanupResponse
+    waitsFor ->
+      return initialCleanupResponse.ended
+    , "initial delete request to have ended", 200
+    runs ->
+      expect(initialCleanupResponse.status).toEqual(204)
+
   it "responds to OPTIONS / with 200", ->
     forOptions '/', (response) ->
       expectOptionsResponse response
@@ -40,42 +56,42 @@ describe "Integration test: storra", ->
       expect(response.status).toEqual(501)
 
   it "responds to OPTIONS /collection with 200 OK", ->
-    forOptions '/collection', (response) ->
+    forOptions collectionUrl, (response) ->
       expectOptionsResponse response
 
   # TODO This is very questionable. The colletion is created on demand and the
   # response is 200 with an empty collection, though the collection did not
-  # exist before this request. 404 might be preferable. OTOH, some do behave
+  # exist before this request. 404 might be preferable. OTOH, some backends do behave
   # just like this, so we would need to check for existence before every list/
   # query by other means, which might have an performance impact.
   it "responds to GET /collection with 200 if collection does not exist - though 404 might be preferable", ->
-    forGet '/non-existing-collection', (response) ->
+    forGet collectionUrl, (response) ->
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(["[]"])
 
   it "responds to GET /collection with 200 if collection exists and has a document", ->
     forRequests [
-      new MockRequest('POST', '/collection', '{"a": "b"}')
-      new MockRequest('GET', '/collection')
+      new MockRequest('POST', collectionUrl, '{"a": "b"}')
+      new MockRequest('GET', collectionUrl)
     ], (response) ->
       expect(responses[0].status).toEqual(201)
       expect(responses[1].status).toEqual(200)
       expect(responses[1].body[0]).toContain('[{"a":"b","_id":')
 
   it "responds to PUT /collection with 501 (not implemented)", ->
-    forPut '/collection', (response) ->
+    forPut collectionUrl, (response) ->
       expect(response.status).toEqual(501)
 
   it "responds 204 when deleting a non-existing collection (idempotent)", ->
-    forDelete '/collection', (response) ->
+    forDelete collectionUrl, (response) ->
       expect(response.status).toEqual(204)
 
   it "deletes an entire collection on DELETE /collection", ->
     forRequests [
-      new MockRequest('POST', '/collection', '{"a": "b"}')
-      new MockRequest('GET', '/collection')
-      new MockRequest('DELETE', '/collection')
-      new MockRequest('GET', '/collection')
+      new MockRequest('POST', collectionUrl, '{"a": "b"}')
+      new MockRequest('GET', collectionUrl)
+      new MockRequest('DELETE', collectionUrl)
+      new MockRequest('GET', collectionUrl)
     ], (response) ->
       expect(responses[0].status).toEqual(201)
       expect(responses[1].status).toEqual(200)
@@ -84,7 +100,7 @@ describe "Integration test: storra", ->
       expect(responses[3].body[0]).not.toContain('[{"a":"b","_id":')
 
   it "responds to OPTIONS /collection/key with 200 OK", ->
-    forOptions '/collection/key', (response) ->
+    forOptions keyUrl, (response) ->
       expectOptionsResponse response
 
   it "responds to GET /collection/key with 404 if document does not exist", ->
@@ -95,7 +111,7 @@ describe "Integration test: storra", ->
   it "responds to GET /collection/key with 200 if documents exists", ->
     location = null
     forRequests [
-      new MockRequest('POST', '/collection', '{"a": "b"}', null, (response) ->
+      new MockRequest('POST', collectionUrl, '{"a": "b"}', null, (response) ->
         location = response.headers['Location']
       )
       new MockRequest('GET', 'will be set by "after" handler', null, (request) ->
@@ -107,19 +123,20 @@ describe "Integration test: storra", ->
       expect(responses[1].body[0]).toContain('{"a":"b","_id":')
 
   it "responds to POST /collection/key with 501 (not implemented)", ->
-    forPost '/collection/key', (response) ->
+    forPost keyUrl, (response) ->
       expect(response.status).toEqual(501)
 
   it "responds to PUT /collection/key with 404 for a non-existing document", ->
     forPut('/collection/non-existing-document', (response) ->
       expect(response.status).toEqual(404)
-    , '{"a": "b"}'
+    , '{"c": "d"}'
     )
 
   it "updates an existing document", ->
+    log.error("SLDJSLKDJSDLKJSDLKJ")
     location = null
     forRequests [
-      new MockRequest('POST', '/collection', '{"a": "b"}', null, (response) ->
+      new MockRequest('POST', collectionUrl, '{"e": "f"}', null, (response) ->
         location = response.headers['Location']
       )
       new MockRequest('PUT', 'ignored', '{"x": "y"}', (request) ->
@@ -133,17 +150,17 @@ describe "Integration test: storra", ->
       expect(responses[1].status).toEqual(204)
       expect(responses[2].status).toEqual(200)
       expect(responses[2].body[0]).toContain('{"x":"y","_id":')
-      expect(responses[2].body[0]).not.toContain('"a"')
-      expect(responses[2].body[0]).not.toContain('"b"')
+      expect(responses[2].body[0]).not.toContain('"e"')
+      expect(responses[2].body[0]).not.toContain('"f"')
 
   it "responds 204 when deleting a non-existing document (idempotent)", ->
-    forDelete '/collection/key', (response) ->
+    forDelete keyUrl, (response) ->
       expect(response.status).toEqual(204)
 
   it "deletes a document on DELETE /collection/key", ->
     location = null
     forRequests [
-      new MockRequest('POST', '/collection', '{"a": "b"}', null, (response) ->
+      new MockRequest('POST', collectionUrl, '{"a": "b"}', null, (response) ->
         location = response.headers['Location']
       )
       new MockRequest('GET', 'ignored', null, (request) ->
@@ -181,7 +198,7 @@ describe "Integration test: storra", ->
     forDelete '/one/two/three', (response) ->
       expect(response.status).toEqual(404)
 
- 
+
   forRequests = (requests, responseCheck) ->
     for i in [0...requests.length]
       executeRequestAndWaitForResponse(i, requests, responses)
@@ -202,7 +219,7 @@ describe "Integration test: storra", ->
     waitsFor ->
       return responses[i] && responses[i].ended
     , "request to have returned", 200
- 
+
   forOptions = (path, responseCheck) ->
     forSingleRequest('OPTIONS', path, responseCheck)
 
@@ -248,14 +265,14 @@ describe "Integration test: storra", ->
 
     on: (event, callback) ->
       @listener[event] = callback
- 
+
   class MockResponse
     constructor: () ->
       @status = null
       @headers = []
       @body = []
       @ended = false
- 
+
     writeHead: (status, headers) ->
       @status = status
       @headers = headers

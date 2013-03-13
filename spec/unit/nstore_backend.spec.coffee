@@ -1,4 +1,4 @@
-xdescribe "The nstore backend", ->
+describe "The nstore backend", ->
 
   sandbox = null
   fs = null
@@ -26,7 +26,7 @@ xdescribe "The nstore backend", ->
       'exists'
       'unlink'
     ])
-    backend = sandbox.require '../backends/nstore_backend',
+    backend = sandbox.require '../../backends/nstore_backend',
       requires:
         'nstore': nstore
         'fs': fs
@@ -35,8 +35,14 @@ xdescribe "The nstore backend", ->
   it "lists a collection", ->
     backend.list('collection', writeResponse)
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.all, 0).thenCallIt(backend, 'error', 'result')
-    expect(writeResponse).toHaveBeenCalledWith('error', 'result')
+    whenCallback(collection.all, 0).thenCallIt(backend, undefined, {key1: {a: "b"}, key2: {c: "d"}})
+    expect(writeResponse).toHaveBeenCalledWith(undefined, [{a: "b", _id: "key1"}, {c: "d", _id: "key2"}])
+ 
+  it "passes on errors when listing a collection fails", ->
+    backend.list('collection', writeResponse)
+    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(collection.all, 0).thenCallIt(backend, 'error', 'whatever')
+    expect(writeResponse).toHaveBeenCalledWith('error', undefined)
 
   it "removes an existing collection", ->
     backend.removeCollection('collection', writeResponse)

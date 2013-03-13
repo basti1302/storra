@@ -19,7 +19,7 @@ describe "Request routing:", ->
       'notFound'
     ])
 
-    router = sandbox.require '../router', 
+    router = sandbox.require '../../router', 
       requires:
         './requesthandler': requesthandler
 

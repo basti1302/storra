@@ -13,7 +13,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
   writeResponse = null
 
   beforeEach ->
-    (new (require('./test_config_reader'))()).createGlobalConfig()
+    (new (require('../test_config_reader'))()).createGlobalConfig()
 
     sandbox = require 'sandboxed-module'
     
@@ -56,7 +56,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     mongodb.Server.andReturn(server)
     mongodb.ObjectID.andReturn('123456789012')
 
-    backend = sandbox.require '../backends/mongodb_backend',
+    backend = sandbox.require '../../backends/mongodb_backend',
       requires:
         'mongodb': mongodb
     writeResponse = jasmine.createSpy('writeResponse')
