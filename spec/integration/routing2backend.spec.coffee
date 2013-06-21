@@ -2,13 +2,15 @@ describe "Integration from routing to backend test: storra", ->
 
   log = require('../../log')
   Step = require('step')
+  uuid = require('node-uuid')
 
   baseUrl = 'http://localhost:1302'
-  collectionName = 'integration_test_routing2backend'
-  collectionUrl = '/' + collectionName
-  keyName = 'key'
-  keyUrl = collectionUrl + '/' + keyName
 
+  collectionName = null
+  collectionUrl = null
+  keyName = null
+  keyUrl = null 
+ 
   router = null
   requests = []
   responses = []
@@ -16,22 +18,29 @@ describe "Integration from routing to backend test: storra", ->
   beforeEach ->
     # TODO parameterize this test like backend_integration spec with all possible backends
     global.storra_config = {core: {backend: './backends/node_dirty_backend'}}
-    router = require '../../router'
+    Router = require '../../router'
+    router = new Router()
 
+    collectionName = uuid.v1()
+    collectionUrl = "/#{collectionName}"
+    keyName = 'key'
+    keyUrl = "#{collectionUrl}/#{keyName}"
+  
     requests = []
     responses = []
 
-    initialCleanupRequest = null
-    initialCleanupResponse = null
+  afterEach ->
+    cleanupRequest = null
+    cleanupResponse = null
     runs ->
-      initialCleanupRequest = new MockRequest('DELETE', collectionUrl)
-      initialCleanupResponse = new MockResponse()
-      router.route initialCleanupRequest, initialCleanupResponse
+      cleanupRequest = new MockRequest('DELETE', collectionUrl)
+      cleanupResponse = new MockResponse()
+      router.route cleanupRequest, cleanupResponse
     waitsFor ->
-      return initialCleanupResponse.ended
+      return cleanupResponse.ended
     , "initial delete request to have ended", 200
     runs ->
-      expect(initialCleanupResponse.status).toEqual(204)
+      expect(cleanupResponse.status).toEqual(204)
 
   it "responds to OPTIONS / with 200", ->
     forOptions '/', (response) ->
@@ -61,13 +70,17 @@ describe "Integration from routing to backend test: storra", ->
 
   # TODO This is very questionable. The colletion is created on demand and the
   # response is 200 with an empty collection, though the collection did not
-  # exist before this request. 404 might be preferable. OTOH, some backends do behave
-  # just like this, so we would need to check for existence before every list/
+  # exist before this request. Since a GET request SHOULD not have any side
+  # effects on the resource (in particular, a GET should not create a new
+  # resource, not creating the collection on the fly would be much better.
+  # In this case we could return 404. OTOH, some backends (for example, MongoDB)
+  # do create the collection automatically with the first request. To achieve 
+  # the desired behaviour we would need to check for existence before every list/
   # query by other means, which might have an performance impact.
-  it "responds to GET /collection with 200 if collection does not exist - though 404 might be preferable", ->
+  it "responds to GET /collection with 200 if collection does not exist - though 404 would be correct", ->
     forGet collectionUrl, (response) ->
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(["[]"])
+      expect(response.body).toEqual(['[',']'])
 
   it "responds to GET /collection with 200 if collection exists and has a document", ->
     forRequests [
@@ -76,8 +89,10 @@ describe "Integration from routing to backend test: storra", ->
     ], (response) ->
       expect(responses[0].status).toEqual(201)
       expect(responses[1].status).toEqual(200)
-      expect(responses[1].body[0]).toContain('[{"a":"b","_id":')
-
+      expect(responses[1].body[0]).toEqual('[')
+      expect(responses[1].body[1]).toContain('{"a":"b","_id":')
+      expect(responses[1].body[2]).toEqual(']')
+      
   it "responds to PUT /collection with 501 (not implemented)", ->
     forPut collectionUrl, (response) ->
       expect(response.status).toEqual(501)
@@ -95,9 +110,11 @@ describe "Integration from routing to backend test: storra", ->
     ], (response) ->
       expect(responses[0].status).toEqual(201)
       expect(responses[1].status).toEqual(200)
-      expect(responses[1].body[0]).toContain('[{"a":"b","_id":')
+      expect(responses[1].body[1]).toContain('{"a":"b","_id":')
       expect(responses[2].status).toEqual(204)
-      expect(responses[3].body[0]).not.toContain('[{"a":"b","_id":')
+      expect(responses[3].body[0]).toEqual('[')
+      expect(responses[3].body[1]).toEqual(']')
+      expect(responses[3].body.length).toEqual(2)
 
   it "responds to OPTIONS /collection/key with 200 OK", ->
     forOptions keyUrl, (response) ->
@@ -133,7 +150,6 @@ describe "Integration from routing to backend test: storra", ->
     )
 
   it "updates an existing document", ->
-    log.error("SLDJSLKDJSDLKJSDLKJ")
     location = null
     forRequests [
       new MockRequest('POST', collectionUrl, '{"e": "f"}', null, (response) ->

@@ -10,6 +10,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
   db = null
   collection = null
   cursor = null
+  writeDocument = null
+  writeEnd = null
   writeResponse = null
 
   beforeEach ->
@@ -56,19 +58,23 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     mongodb.Server.andReturn(server)
     mongodb.ObjectID.andReturn('123456789012')
 
-    backend = sandbox.require '../../backends/mongodb_backend',
+    MongoDBConnector = sandbox.require '../../backends/mongodb_backend',
       requires:
         'mongodb': mongodb
+    backend = new MongoDBConnector()
+
+    writeDocument = jasmine.createSpy('writeDocument')
+    writeEnd = jasmine.createSpy('writeEnd')
     writeResponse = jasmine.createSpy('writeResponse')
 
   it "opens a connection if not yet connected", ->
     mongoClient._db = { openCalled: false }
-    backend.list('collection', writeResponse)
+    backend.list('collection', writeDocument, writeEnd)
     expect(mongoClient.open).toHaveBeenCalled()
 
   it "uses an existing connection without opening a second one", ->
     mongoClient._db = { openCalled: true }
-    backend.list('collection', writeResponse)
+    backend.list('collection', writeDocument, writeEnd)
     expect(mongoClient.open).not.toHaveBeenCalled()
 
   it "waits for a connection to be established if neccessary", ->
@@ -76,7 +82,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     shouldHaveConnected = false
     runs ->
       mongoClient._db = { openCalled: true, _state: 'connecting' }
-      backend.list('collection', writeResponse)
+      backend.list('collection', writeDocument, writeEnd)
       setTimeout(() ->
         mongoClient._db._state = 'connected'
       , 15)
@@ -92,28 +98,32 @@ describe "The MongoDB backend (with mocked dependencies)", ->
   it "does not wait infinitely long for a connection to be established", ->
     backend.setRetryParameters(3, 10)
     errorPassedToRequestHandler = null
-    writeResponse = (err) ->
+    writeEnd = (err) ->
       errorPassedToRequestHandler = err
     runs ->
       mongoClient._db = { openCalled: true, _state: 'connecting' }
-      backend.list('collection', writeResponse)
+      backend.list('collection', writeDocument, writeEnd)
     waitsFor(() ->
       return errorPassedToRequestHandler != null
     , 3 * 10 + 100)
     runs ->
-      expect(errorPassedToRequestHandler).toEqual('Could not connect to MongoDB after 3 retries, MongoClient is still in state connecting.')
+      expect(errorPassedToRequestHandler instanceof Error).toBe(true)
+      expect(errorPassedToRequestHandler.http_status).toEqual(500)
+      expect(errorPassedToRequestHandler.message).toEqual('Could not connect to MongoDB after 3 retries, MongoClient is still in state connecting.')
 
   it "closes the connection on demand", ->
     backend.closeConnection(null)
     expect(mongoClient.close).toHaveBeenCalledWith(jasmine.any(Function))
 
   it "lists a collection", ->
-    backend.list('collection', writeResponse)
+    backend.list('collection', writeDocument, writeEnd)
     cb = getCallback(cursor.each, 0)
     cb.call(backend, undefined, {a: "b"})
     cb.call(backend, undefined, {c: "d"})
     cb.call(backend, undefined, null)
-    expect(writeResponse).toHaveBeenCalledWith(undefined, [{a: "b"}, {c: "d"}])
+    expect(writeDocument).toHaveBeenCalledWith({a: "b"})
+    expect(writeDocument).toHaveBeenCalledWith({c: "d"})
+    expect(writeEnd).toHaveBeenCalledWith(null)
 
   it "removes an existing collection", ->
     backend.removeCollection('collection', writeResponse)
@@ -144,7 +154,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
   it "says 404 when reading an non-existing document", ->
     backend.read('collection', 'key', writeResponse)
     whenCallback(collection.findOne, 1).thenCallIt(backend, undefined, null)
-    expect(writeResponse).toHaveBeenCalledWith(404, null, 'key')
+    expect(writeResponse).toHaveBeenCalledWith(jasmine.any(Object), null, 'key')
+    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
 
   it "creates a document", ->
     backend.create('collection', 'document', writeResponse)
@@ -174,7 +185,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
   it "throws 404 error when updating a non-existing document", ->
     backend.update('collection', 'key', 'document', writeResponse)
     whenCallback(collection.update, 3).thenCallIt(backend, undefined, 0)
-    expect(writeResponse).toHaveBeenCalledWith(404)
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
 
   it "creates an error if more than one document have changed", ->
     # This will never happen™. We test the behaviour anyway.

@@ -4,6 +4,8 @@
  * Wrapper for {database}.
  */
 
+WARNING: OUTDATED
+
 var log = require('../log')
 
 exports.list = function list(collectionName, writeResponse) {

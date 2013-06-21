@@ -5,6 +5,8 @@ describe "The nstore backend", ->
   nstore = null
   backend = null
   collection = null
+  writeDocument = null
+  writeEnd = null
   writeResponse = null
 
   beforeEach ->
@@ -26,23 +28,30 @@ describe "The nstore backend", ->
       'exists'
       'unlink'
     ])
-    backend = sandbox.require '../../backends/nstore_backend',
+    NStoreConnector = sandbox.require '../../backends/nstore_backend',
       requires:
         'nstore': nstore
         'fs': fs
+    backend = new NStoreConnector()
+
+    writeDocument = jasmine.createSpy('writeDocument')
+    writeEnd = jasmine.createSpy('writeEnd')
     writeResponse = jasmine.createSpy('writeResponse')
 
   it "lists a collection", ->
-    backend.list('collection', writeResponse)
+    backend.list('collection', writeDocument, writeEnd)
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.all, 0).thenCallIt(backend, undefined, {key1: {a: "b"}, key2: {c: "d"}})
-    expect(writeResponse).toHaveBeenCalledWith(undefined, [{a: "b", _id: "key1"}, {c: "d", _id: "key2"}])
+    expect(writeDocument).toHaveBeenCalledWith({a: "b", _id: "key1"})
+    expect(writeDocument).toHaveBeenCalledWith({c: "d", _id: "key2"})
+    expect(writeEnd).toHaveBeenCalledWith(null)
  
   it "passes on errors when listing a collection fails", ->
-    backend.list('collection', writeResponse)
+    backend.list('collection', writeDocument, writeEnd)
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.all, 0).thenCallIt(backend, 'error', 'whatever')
-    expect(writeResponse).toHaveBeenCalledWith('error', undefined)
+    expect(writeDocument).not.toHaveBeenCalled()
+    expect(writeEnd).toHaveBeenCalledWith('error')
 
   it "removes an existing collection", ->
     backend.removeCollection('collection', writeResponse)
@@ -82,7 +91,8 @@ describe "The nstore backend", ->
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, 'error')
     expect(collection.save).not.toHaveBeenCalled()
-    expect(writeResponse).toHaveBeenCalledWith(404)
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].http_status).toBe(404)
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)

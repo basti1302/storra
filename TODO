@@ -1,24 +1,86 @@
+=== STORRA ===
+
+
+== Build ==
+
+* grunt
+* jslint
+* use correct conventions for node.js projects (directory layout etc.)
+
+
 == Storra Core Features ==
-* PUT/POST - what happens if no body is received? Will the requests time out? Or will they just keep the
-  connection forever? Also write integration test for this (routing_integration.spec.coffee)
+
+= Basics =
+* Make all code adhere to style.txt
+* Adhere to a more standard directory layout:
+  storra/
+    package.json
+    README.md
+    storra.yml
+    bin/
+    data/
+    features/
+    lib/
+      (all common js prod code)
+      backend/
+        (js prod code for different backends)
+    misc/
+      TODO
+      style.txt
+    node_modules/
+    spec/
+* Add README.markdown
+* Add LICENSE
+
+* Remove code duplication in backends. Especially the two in memory backends have some duplicated code, but mongo also.
+* Use a dependency injection container. wire.js seems to be nice.
+* log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
+* Remove inconsistency: When calling methods which take an optional parameter
+(for example error) and the caller does not want to pass a value for the
+parameter, it sometimes uses null, sometimes undefined and sometimes gives
+no argument at all (which is equivalent to undefined, but is syntactically
+different). Choose one style and stick with it.
+* TODO comments in various files
+
+= Misc =
+* Collections are always created on the fly, even if we GET a non-existing collection, thus, 200 is the responsee for GET /non-existing-collection, which seems odd. 404 would be more appropriate. Not sure how well other backends support this, they also seem to create any accessed collection on the fly.
+* Get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
+* configure routing per yaml? let backend configure routing?
+* Check out warehouse.js and RQL
+
+= Tests =
+* Cucumber acceptance tests directly for Storra, not via aboco - but with a JS port of cucumber
+* Performance tests
+  - Performance testing with different backends, without network latency, without concurrent requests
+  - Load/throughput tests with a huge number of concurrent requests - choose a backend, which supports this scenario well. Second step: Execute these tests with different backends.
+  - Performance tests including *local* network latency and with comparisons to accessing the DB directly
+  - Performance tests for distributed scenario (Storra as a hosted service somewhere else) - conclusions?
+ 
+= HTTP communication =
+* Streaming when returning a collection: Does the current implementation really send doc by doc to the client? Can other requests be responded to in between? 
+* Streaming when returning a collection: Is it better to process multiple documents in one chunk?
+* Write Content-Length header with every request.
+* Evaluate implicit headers (response.setHeader and response.statusCode instead of response.writeHeader) - probably more maintainable than merging headers and then writing them with writeHead.
+* PUT/POST - what happens if no body is received? Will the requests time out? Or will they just keep the connection forever? Also write integration test for this (routing_integration.spec.coffee)
   I'm pretty sure that the requests emits the 'end' handler in any case, if the client has *finished sending* the requst, no matter if a the request had a body, or not. But: What happens if the client does not finish sending the request (dies in the middle of sending the body, for example)? Does node.js time out cleanly?
-* Add more specs to spec/routing_integration.spec.coffee
-* Use Error objects with errno or custom http_status_code attribute instead of throwing
-strings, integers and whatnot. Check for all places where we throw an error or call a
-callback with an err != null/undefined
-* Convert all of our own node modules to standard javascript objects and put that into exports/modules.exports
-* Use a dependency injection container
-* Various improvements in MongoDB backend
-* Queries
-  - how to query RESTful?
-  - unified query language for all backends or individual queries for each backend?
-  - use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
+* Protect PUT/POST body reading code against clients which send too much data to prevent a DOS attack. There's a discussion about that on stackoverflow in a question on how to read post parameters.
+* Enable HTTP caching (Last-Modified-Header, ETags etc.)
+
+= Queryies =
+* how to query RESTful?
+* unified query language for all backends or individual queries for each backend?
+* use MongoDB and CouchDB to validate the proof of concept - can we easily map the storra query language to both backends? Or, the other way round, are the query interfaces of both similar enough to guide the way to the unified NoSQL query API?
 * -> GitHub
-* Collections are always created on the fly, even if we GET an non-existing collection, thus, 200 is the responsee for GET /non-existing-collection, which seems odd. 404 would be more appropriate. Not sure how well backends support this, they also seem to create any accessed collection on the fly.
-* Cucumber acceptance tests directly for Storra, not via aboco
+
+= very far in the future =
+* Built-in multi-tenant-capabilities would be cool, maybe, or something like multiple virtual storra servers under one "physical" storra servers (each configured separately) - think shared storra hosting
+* Push capabilities (push stuff to mobile phones when certain data is changed/added)
+
+== Backends ==
 * Add more backends, a whole lot of them, one after another...
   - Caution: For hosted Storra, this is less important. The customer probably does not really care about the backend.
   - MongoDB: Done (well, sort of)
+  - HBase
   - CouchDB?
   - Riak?
   - Redis?
@@ -26,20 +88,38 @@ callback with an err != null/undefined
     - MySQL
     - sqlite
     - Oracle??
-* Enable HTTP caching (Last-Modified-Header, ETags etc.)
-* Get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
-* Use callback versions of node-dirty API everywhere
-* log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
-* Performance tests
-  - Performance testing with different backends, without network latency, without concurrent requests
-  - Load/throughput tests with a huge number of concurrent requests - choose a backend, which supports this scenario well. Second step: Execute these tests with different backends.
-  - Performance tests including *local* network latency and with comparisons to accessing the DB directly
-  - Performance tests for distributed scenario (Storra as a hosted service somewhere else) - conclusions?
-  configure routing per yaml? let backend configure routing?
-* Built-in multi-tenant-capabilities would be cool, maybe, or something like multiple virtual storra servers under one "physical" storra servers (each configured separately) - think shared storra hosting
-* Push capabilities (push stuff to mobile phones when certain data is changed/added)
 
-== Storra Infrastructure ==
+= MongoDB connector =
+
+* Various improvements in MongoDB backend (see comments there)
+* If mongodb is not reachable all requests should respond 500.
+
+
+== In Memory Connectors (node-dirty and nStore)
+
+* Use callback versions of node-dirty API everywhere
+
+
+== Authentication ==
+
+* There is never any authentication with regard to the tenant.
+* Thus, there is no secret that the tenant needs to keep.
+* All authentication always happens only with regard to a single user.
+* All authentication happens by oauth.
+* The user can log into an app that is powered by storra.com by authenticating himself with an oauth provider.
+* storra.com itself might act as an oauth provider
+* storra.com itself might offer an oauth compatible user database service - as a service for its tenants
+* In Oauth 2.0 spec terms:
+  - The web app of the storra.com tenant is the client
+  - The authorization server is either some existing Oauth provider or auth.storra.com
+  - The user of the tenant's web app is the resource owner
+  - storra.com is the resource server
+* It must be possible for the tenant to post data for a new user that has just
+  registered at the tenant's web app.
+
+
+== storra.com infrastructure ==
+
 * Requirements:
   - Load Balancing
   - Fail Over
@@ -49,6 +129,34 @@ callback with an err != null/undefined
   - Look into node-supervisor and similar solutions
   - nginx before Storra?
 
-== Storra Security ==
+
+== Storra Authentication Components ==
+
+!! Everything written in this section is utter nonsense, I think. !!
+
+* Provide small authentication components for as many possible backend technologies as possible.
+  Each needs to be set up as easily as possible.
+  Candidates:
+  - Apache Module
+  - PHP
+  - Perl/cgi-bin
+  - Java (Servlet in War)
+  - Python, Ruby
+  - node.js
+  
+  The authentication component is the only server/backend component a storra.com customer needs
+  to set up in its own infrastructure. This is required because with only static assets 
+  (html, css, js) there is simply no place where you could put a private key or any other
+  (shared) secret.
+
+  Thus, each storra.com customer runs the auth component in its own IT. :-(
+  The auth component could issue short lived tickets or whatever...
+
+  And then??? We still need to secure the auth component against unauthorized access.
+
+
+== Storra Security Concerns and Todos ==
+
 * Deny access everybody except users
 * Enforce isolation of tenants
+

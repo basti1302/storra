@@ -7,12 +7,15 @@
 
 'use strict'
 
+var startTime = Date.now()
 var log = require('./log')
+log.info("Starting Storra...")
 
 var configReader = new (require('./config_reader'))()
 configReader.read('./storra.yml')
 
-var server = require("./server")
+var StorraServer = require("./server")
+var server = new StorraServer()
 
 /* register various handlers */
 
@@ -39,4 +42,4 @@ function shutdown() {
 
 log.info("using backend: " + global.storra_config.core.backend)
 
-server.start()
+server.start(startTime)

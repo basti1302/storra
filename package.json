@@ -2,7 +2,7 @@
   "name": "storra",
   "version": "0.0.1",
   "author": "Bastian Krol",
-  "description": "a generic stand-alone document store with a RESTful interface which can be configured to use different storage engines (MongoDB (not yet), nStore, node-dirty, ...), all encapsulated behind the same CRUD/REST API",
+  "description": "a generic stand-alone data store with a RESTful interface which can be configured to use different storage engines (MongoDB, nStore, node-dirty, ...), all encapsulated behind the same REST API",
   "contributors": [],
   "preferGlobal": "true",
   "bin": {
@@ -26,8 +26,10 @@
     "node-uuid": "1.4.x",
     "nstore": "0.5.1"
   },
-  "comment_devDependencies": "jasmine-node 1.2.x needs to be installed but prefers to be installed globally which is not possible via package.json",
-
+  "comment_devDependencies": {
+    "jasmine-node": "jasmine-node 1.2.x needs to be installed to execute specs, but prefers to be installed globally which is not possible via package.json - npm install -g jasmine-node@1.2.x",
+    "cucumber.js": "cucumber.js needs to be installed to execute acceptance tests, but prefers to be installed globally which is not possible via package.json - npm install -g cucumber"
+  },
   "devDependencies": {
     "sandboxed-module": "0.2.x",
     "step": ">=0.0.5"

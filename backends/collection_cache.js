@@ -1,5 +1,7 @@
 var log = require('../log')
 
+module.exports = Cache
+
 function Cache(capacity) {
   this.cache = {}
   if (capacity) {
@@ -10,7 +12,6 @@ function Cache(capacity) {
   this.size = 0
   this.lru = new LinkedKeyMap()
 }
-module.exports = exports = Cache
 
 Cache.prototype.get = function(key) {
   var node = this.cache[key]

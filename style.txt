@@ -1,0 +1,38 @@
+Storra Style Guide
+
+(Mostly taken from http://nodeguide.com/style.html, Felix G.'s style guide)
+
+Note: These "rules" have been written month after I started to code storra.
+Right now, the storra code is quite inconsistend and *does not follow* this
+style guide. Currently, it is a formulation of the goal, not of the status quo.
+
+TODO: Apply style rules to storra code
+TODO: Apply recommendations in 
+  http://caolanmcmahon.com/posts/nodejs_style_and_structure/
+
+Production code: Plain old Javascript
+Specs: Coffeescript
+Indentation: Two spaces, no tabs
+Semicolons: No, never (different from Felix')
+  See https://npmjs.org/doc/coding-style.html#Semicolons for exceptions.
+Line Length: 80
+Quotes: single quotes
+JSON quotes: double quotes
+Quotes in coffee script files (specs): double quotes
+Braces: ppening brace on same line
+Functions: lower camel case
+Variables: lower camel case
+Class names: upper camel case
+Constants: all upper case, with underscores
+File Names: all lower case, snake case (different from Felix')
+Equality: triple equality operator
+Named Closures: Yes, please
+Parameter Ordering: error, param, param, ..., callback, callback, ...
+Function Style: Avoid nested closures/callbacks. Extract nested callbacks below
+  the first level into separate, named functions. See http://caolanmcmahon.com/posts/nodejs_style_and_structure/,
+  secion 2. "More, smaller functions"
+Never use undefined. Pass null for optional function parameters, Do not just
+  omit optional parameters, that is equivalent to passing undefined. (See
+  https://npmjs.org/doc/coding-style.html#null-undefined-false-0)
+Exceptions: Never throw anything. Pass an error object to the callback.
+Always check for errors in callbacks.

@@ -7,6 +7,8 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   dirty = null
   backend = null
   collection = null
+  writeDocument = null
+  writeEnd = null
   writeResponse = null
 
   beforeEach ->
@@ -27,17 +29,22 @@ describe "The node-dirty backend (with mocked dependencies)", ->
       'exists'
       'unlink'
     ])
-    backend = sandbox.require '../../backends/node_dirty_backend',
+    NodeDirtyConnector = sandbox.require '../../backends/node_dirty_backend',
       requires:
         'dirty': dirty
         'fs': fs
+    backend = new NodeDirtyConnector()
+
+    writeDocument = jasmine.createSpy('writeDocument')
+    writeEnd = jasmine.createSpy('writeEnd')
     writeResponse = jasmine.createSpy('writeResponse')
 
   it "lists a collection", ->
-    backend.list('collection', writeResponse)
+    backend.list('collection', writeDocument, writeEnd)
     whenCallback(collection.on, 1).thenCallIt(backend)
     whenCallback(collection.forEach, 0).thenCallIt(backend, 'key', {a: "b"})
-    expect(writeResponse).toHaveBeenCalledWith(undefined, [{a: "b", _id: 'key'}])
+    expect(writeDocument).toHaveBeenCalledWith({a: "b", _id: 'key'})
+    expect(writeEnd).toHaveBeenCalledWith(null)
 
   # Duplication: Same test (and same implementation) as for nStore backend
   it "removes an existing collection", ->
@@ -66,7 +73,8 @@ describe "The node-dirty backend (with mocked dependencies)", ->
     backend.read('collection', 'key', writeResponse)
     whenCallback(collection.on, 1).thenCallIt(backend)
     expect(collection.get).toHaveBeenCalledWith('key')
-    expect(writeResponse).toHaveBeenCalledWith(404, null, 'key')
+    expect(writeResponse).toHaveBeenCalledWith(jasmine.any(Object), null, 'key')
+    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
 
   it "creates a document", ->
     backend.create('collection', 'document', writeResponse)
@@ -85,7 +93,8 @@ describe "The node-dirty backend (with mocked dependencies)", ->
     backend.update('collection', 'key', 'document', writeResponse)
     whenCallback(collection.on, 1).thenCallIt(backend)
     expect(collection.set).not.toHaveBeenCalled()
-    expect(writeResponse).toHaveBeenCalledWith(404)
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)

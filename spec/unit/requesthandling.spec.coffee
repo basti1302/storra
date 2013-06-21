@@ -5,6 +5,8 @@ describe "The request handler", ->
   requesthandler = null
   request = null
   response = null
+  err404 = new Error("not found")
+  err404.http_status = 404
 
   beforeEach ->
     global.storra_config = {core: {backend: './backend'}}
@@ -29,9 +31,11 @@ describe "The request handler", ->
       'end'
     ])
 
-    requesthandler = sandbox.require '../../requesthandler',
+    RequestHandler = sandbox.require '../../requesthandler',
       requires:
-        './backend': backend
+        './backend': () -> 
+          backend
+    requesthandler = new RequestHandler()
 
   it "responds to root with 400 Bad Request", ->
     requesthandler.root(request, response)
@@ -46,14 +50,15 @@ describe "The request handler", ->
 
   it "serves a collection of documents", ->
     requesthandler.list(request, response, 'collection')
-    expect(backend.list).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    whenCallback(backend.list, 1).thenCallIt(requesthandler, undefined, [])
+    expect(backend.list).toHaveBeenCalledWith 'collection', jasmine.any(Function), jasmine.any(Function)
+    whenCallback(backend.list, 1).thenCallIt(requesthandler, [])
+    whenCallback(backend.list, 2).thenCallIt(requesthandler, null)
     expectResponse 200
     expectContent()
 
   it "says 500 if listing the collection fails", ->
     requesthandler.list(request, response, 'collection')
-    whenCallback(backend.list, 1).thenCallIt(requesthandler, 'error', [])
+    whenCallback(backend.list, 2).thenCallIt(requesthandler, 'error')
     expect500()
 
   it "removes a collection", ->
@@ -77,7 +82,7 @@ describe "The request handler", ->
 
   it "says 404 if serving a document fails", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(backend.read, 2).thenCallIt(requesthandler, 404, null, 'key')
+    whenCallback(backend.read, 2).thenCallIt(requesthandler, err404, null, 'key')
     expect404()
     
   it "says 500 if serving a document fails for unknown reasons", ->
@@ -112,7 +117,7 @@ describe "The request handler", ->
   it "says 404 if the document is not found during update", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    whenCallback(backend.update, 3).thenCallIt(requesthandler, 404)
+    whenCallback(backend.update, 3).thenCallIt(requesthandler, err404)
     expect404()
 
   it "says 500 if updating a document fails", ->

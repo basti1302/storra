@@ -2,9 +2,10 @@ require('js-yaml')
 
 var log = require('./log')
 
-module.exports = exports = ConfigurationReader
+module.exports = ConfigurationReader
 
 function ConfigurationReader() {
+
   function recursiveMerge(configuration, defaults) {
     for (key in defaults) {
       var defaultValue = defaults[key]

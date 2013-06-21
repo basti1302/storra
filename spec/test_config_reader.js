@@ -1,4 +1,4 @@
-module.exports = exports = TestConfigurationReader
+module.exports = TestConfigurationReader
 
 function TestConfigurationReader() {
   this.createGlobalConfig = function() {
