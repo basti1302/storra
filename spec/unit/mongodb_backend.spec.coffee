@@ -58,7 +58,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     mongodb.Server.andReturn(server)
     mongodb.ObjectID.andReturn('123456789012')
 
-    MongoDBConnector = sandbox.require '../../backends/mongodb_backend',
+    MongoDBConnector = sandbox.require '../../lib/backends/mongodb_backend',
       requires:
         'mongodb': mongodb
     backend = new MongoDBConnector()

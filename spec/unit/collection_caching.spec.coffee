@@ -4,7 +4,7 @@ describe "The collection cache", ->
   cache = null
 
   beforeEach ->
-    Cache = require('../../backends/collection_cache')
+    Cache = require('../../lib/backends/collection_cache')
     cache = new Cache()
 
   it "returns null for a collection that is not in the cache", ->

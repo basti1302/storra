@@ -31,7 +31,7 @@ describe "The request handler", ->
       'end'
     ])
 
-    RequestHandler = sandbox.require '../../requesthandler',
+    RequestHandler = sandbox.require '../../lib/requesthandler',
       requires:
         './backend': () -> 
           backend

@@ -21,7 +21,7 @@ describe "Request routing:", ->
     RequestHandler = () ->
       requesthandler
 
-    Router = sandbox.require '../../router', 
+    Router = sandbox.require '../../lib/router', 
       requires:
         './requesthandler': RequestHandler
     router = new Router()

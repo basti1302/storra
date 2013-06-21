@@ -5,7 +5,7 @@ describe "Common backend integration test:", ->
 
   TIMEOUT = 5000
 
-  log = require('../../log')
+  log = require('../../lib/log')
   Step = require('step')
   uuid = require('node-uuid')
 
@@ -417,8 +417,8 @@ describe "Common backend integration test:", ->
   Call all parameterized tests
   ###
 
-  parameterized('../../backends/node_dirty_backend', 'node-dirty')
-  parameterized('../../backends/nstore_backend', 'nStore')
+  parameterized('../../lib/backends/node_dirty_backend', 'node-dirty')
+  parameterized('../../lib/backends/nstore_backend', 'nStore')
   # for the MongoDB integration tests, the MongoDB has to run (obviously)
-  parameterized('../../backends/mongodb_backend', 'MongoDB')
+  parameterized('../../lib/backends/mongodb_backend', 'MongoDB')
 

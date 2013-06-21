@@ -8,13 +8,13 @@
 'use strict'
 
 var startTime = Date.now()
-var log = require('./log')
+var log = require('./lib/log')
 log.info("Starting Storra...")
 
-var configReader = new (require('./config_reader'))()
-configReader.read('./storra.yml')
+var configReader = new (require('./lib/config_reader'))()
+configReader.read('../storra.yml')
 
-var StorraServer = require("./server")
+var StorraServer = require("./lib/server")
 var server = new StorraServer()
 
 /* register various handlers */

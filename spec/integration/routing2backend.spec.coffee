@@ -1,6 +1,6 @@
 describe "Integration from routing to backend test: storra", ->
 
-  log = require('../../log')
+  log = require('../../lib/log')
   Step = require('step')
   uuid = require('node-uuid')
 
@@ -18,7 +18,7 @@ describe "Integration from routing to backend test: storra", ->
   beforeEach ->
     # TODO parameterize this test like backend_integration spec with all possible backends
     global.storra_config = {core: {backend: './backends/node_dirty_backend'}}
-    Router = require '../../router'
+    Router = require '../../lib/router'
     router = new Router()
 
     collectionName = uuid.v1()
@@ -49,7 +49,7 @@ describe "Integration from routing to backend test: storra", ->
   it "responds to GET / with 400", ->
     forGet '/', (response) ->
       expect(response.status).toEqual(400)
-      expect(response.body[0]).toMatch(/This is storra, the REST document store./)
+      expect(response.body[0]).toMatch(/This is storra, the REST data store./)
       expect(response.body).toContain('GET / to display this text,\n')
 
   it "responds to POST / with 501 (not implemented)", ->

@@ -1,1 +1,0 @@
-supervisor --no-restart-on exit index.js
