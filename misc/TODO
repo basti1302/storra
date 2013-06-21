@@ -5,32 +5,13 @@
 
 * grunt
 * jslint
-* use correct conventions for node.js projects (directory layout etc.)
 
 
 == Storra Core Features ==
 
 = Basics =
 * Make all code adhere to style.txt
-* Adhere to a more standard directory layout:
-  storra/
-    package.json
-    README.md
-    storra.yml
-    bin/
-    data/
-    features/
-    lib/
-      (all common js prod code)
-      backend/
-        (js prod code for different backends)
-    misc/
-      TODO
-      style.txt
-    node_modules/
-    spec/
-* Add README.markdown
-* Add LICENSE
+* Add LICENSE. Which?
 
 * Remove code duplication in backends. Especially the two in memory backends have some duplicated code, but mongo also.
 * Use a dependency injection container. wire.js seems to be nice.
@@ -39,7 +20,7 @@
 (for example error) and the caller does not want to pass a value for the
 parameter, it sometimes uses null, sometimes undefined and sometimes gives
 no argument at all (which is equivalent to undefined, but is syntactically
-different). Choose one style and stick with it.
+different). Use the "pass explicit null style" everywhere.
 * TODO comments in various files
 
 = Misc =
@@ -49,7 +30,7 @@ different). Choose one style and stick with it.
 * Check out warehouse.js and RQL
 
 = Tests =
-* Cucumber acceptance tests directly for Storra, not via aboco - but with a JS port of cucumber
+* More acceptance tests
 * Performance tests
   - Performance testing with different backends, without network latency, without concurrent requests
   - Load/throughput tests with a huge number of concurrent requests - choose a backend, which supports this scenario well. Second step: Execute these tests with different backends.
