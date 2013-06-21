@@ -86,7 +86,7 @@ function RequestHandler() {
   // GET /
   this.root = function(request, response) {
     writePlainTextHeader(response, 400)
-    response.write("This is storra, the REST document store. Usage:\n")
+    response.write("This is storra, the REST data store. Usage:\n")
     response.write("GET / to display this text,\n")
     response.write("GET /collection to list a collection of documents,\n")
     response.write("POST to /collection to create a new document (the new key is returned in the \"Location\" header),\n")

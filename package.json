@@ -28,9 +28,11 @@
   },
   "comment_devDependencies": {
     "jasmine-node": "jasmine-node 1.2.x needs to be installed to execute specs, but prefers to be installed globally which is not possible via package.json - npm install -g jasmine-node@1.2.x",
-    "cucumber.js": "cucumber.js needs to be installed to execute acceptance tests, but prefers to be installed globally which is not possible via package.json - npm install -g cucumber"
+    "cucumber.js": "cucumber.js needs to be installed to execute acceptance tests, but prefers to be installed globally which is not possible via package.json - npm install -g cucumber",
+    "supervisor": "Using supervisor during development is also highly recommended, though not required. npm install -g supervisor."
   },
   "devDependencies": {
+    "request": "2.21.x",
     "sandboxed-module": "0.2.x",
     "step": ">=0.0.5"
   },
