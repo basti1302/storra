@@ -53,6 +53,10 @@ var HttpStepsWrapper = function () {
   this.When(/^I GET the collection$/, function(callback) {
     this.get(this.collectionPath(), callback)
   })
+
+  this.When(/^I DELETE the collection$/, function(callback) {
+    this.delete(this.collectionPath(), callback)
+  })
  
   /* THEN */
   

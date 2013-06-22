@@ -35,6 +35,20 @@ var World = function World(callback) {
     })
   }
 
+  this.delete = function(path, callback) {
+    request({url: uri(path), method: 'DELETE'}, function(error, response, responseBody) {
+      if (error) {
+        return callback(new Error("Error on DELETE request to " + uri(path) + ": " + error.message))
+      }
+      else if (response.statusCode != 204) {
+        return callback(new Error("Not 204 on DELETE request to " + uri(path) + ": " + response.statusCode))
+      }
+      res = response
+      callback(null)
+    })
+  }
+
+ 
   this.options = function(path, callback) {
     request({"uri": uri(path), method: "OPTIONS"}, function(error, response, body) {
       if (error) {
