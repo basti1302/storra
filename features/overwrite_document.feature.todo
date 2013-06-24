@@ -1,0 +1,15 @@
+Feature: Overwrite a document
+  As a client of storra
+  I want to overwrite an existing document with new data
+  So that it is up to date
+
+  Scenario: Overwrite an existing document
+    Given a document
+    When I overwrite the document
+    Then the http status should be 204
+    And I should see no content
+    # status 200 and the updated entity in the response body would also be appropriate.
+    # What do we want? Do we want that to be configurable?
+
+  Scenario: Trying to overwrite a non-existing document
+    ... PUT should result in 404 when doc does not exist

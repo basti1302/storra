@@ -1,0 +1,10 @@
+Feature: Partially update a document
+  As a client of storra
+  I want to partially update a document via PATCH
+  So that I can add/change data without having to deal with the whole document
+
+ Scenario: Partially update an existing document
+    Given Storra would implement the PATCH verb
+    Then that would be very fancy
+
+
