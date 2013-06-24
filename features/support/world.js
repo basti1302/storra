@@ -5,73 +5,101 @@ var env = require('./env')
 
 var World = function World(callback) {
 
-  var collection = null
-  var res = null
+  var self = this
+
+  this.collection = null
+  this.lastResponse = null
+  this.doc1 = null
+  this.doc2 = null
 
   this.generateCollectionId = function() {
-    collection = uuid.v1()
+    this.collection = uuid.v1()
   }
 
+  this.generateDocumentId = function() {
+    // MongoDB either accepts a 12 byte string or 24 hex characters
+    this.doc1 = uuid.v1().replace(/-/gi, '').substring(0,24)
+  }
+ 
   this.get = function(path, callback) {
-    request.get(uri(path), function(error, response, body) {
+    var uri = this.uri(path)
+    request.get(uri, function(error, response, body) {
       if (error) {
-        return callback.fail(new Error("Error on GET request to " + uri(path) + ": " + error.message))
+        return callback.fail(new Error("Error on GET request to " + uri + ": " + error.message))
       }
-      res = response
+      self.lastResponse = response
       callback()
     })
   }
 
   this.post = function(path, requestBody, callback) {
-    request({url: uri(path), body: requestBody, method: 'POST'}, function(error, response, responseBody) {
+    var uri = this.uri(path)
+    request({url: uri, body: requestBody, method: 'POST'}, function(error, response, responseBody) {
       if (error) {
-        return callback(new Error("Error on POST request to " + uri(path) + ": " + error.message))
+        return callback(new Error("Error on POST request to " + uri + ": " + error.message))
       }
       else if (response.statusCode != 201) {
-        return callback(new Error("Not 201 on POST request to " + uri(path) + ": " + response.statusCode))
+        return callback(new Error("Not 201 on POST request to " + uri + ": " + response.statusCode))
       }
-      res = response
-      callback(null)
+      self.lastResponse = response
+      callback(null, self.lastResponse.headers['location'])
     })
   }
 
   this.delete = function(path, callback) {
-    request({url: uri(path), method: 'DELETE'}, function(error, response, responseBody) {
+    var uri = this.uri(path)
+    request({url: uri, method: 'DELETE'}, function(error, response, responseBody) {
       if (error) {
-        return callback(new Error("Error on DELETE request to " + uri(path) + ": " + error.message))
+        return callback(new Error("Error on DELETE request to " + uri + ": " + error.message))
       }
       else if (response.statusCode != 204) {
-        return callback(new Error("Not 204 on DELETE request to " + uri(path) + ": " + response.statusCode))
+        return callback(new Error("Not 204 on DELETE request to " + uri + ": " + response.statusCode))
       }
-      res = response
-      callback(null)
+      self.lastResponse = response
+      callback()
     })
   }
 
  
   this.options = function(path, callback) {
-    request({"uri": uri(path), method: "OPTIONS"}, function(error, response, body) {
+    var uri = this.uri(path)
+    request({"uri": uri, method: "OPTIONS"}, function(error, response, body) {
       if (error) {
-        return callback.fail(new Error("Error on OPTIONS request to " + uri(path) + ": " + error.message))
+        return callback.fail(new Error("Error on OPTIONS request to " + uri + ": " + error.message))
       }
-      res = response
+      self.lastResponse = response
       callback()
     })
   }
 
-  this.lastResponse = function() {
-    return res
+  this.rootPath = function() {
+    return '/'
+  }
+ 
+  this.rootUri = function() {
+    return this.uri(this.rootPath())
   }
 
-  this.collectionPath = function() {
+  this.collectionPath = function(collection) {
     return '/' + collection
   }
-
-  function uri(path) {
-    return env.BASE_URL + path
+ 
+  this.collectionUri = function(collection) {
+    return this.uri(this.collectionPath(collection))
   }
 
+  this.documentPath = function(collection, document) {
+    return this.collectionPath(collection) + '/' + document
+  }
 
+  this.documentUri = function(collection, document) {
+    return this.uri(this.documentPath(collection, document))
+  }
+
+  this.uri = function(path) {
+    return env.BASE_URL + path
+  }
+ 
   callback()
 }
 

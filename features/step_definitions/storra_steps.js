@@ -1,10 +1,13 @@
 'use strict'
 
+var url = require('url')
 var Step = require('step')
 
 var HttpStepsWrapper = function () {
 
   this.World = require("../support/world.js").World
+
+  var self = this
 
   /* GIVEN */
 
@@ -22,19 +25,42 @@ var HttpStepsWrapper = function () {
     callback()
   })
 
-  this.Given(/^a collection with documents$/, function(callback) {
-    this.generateCollectionId()
+  this.Given(/^a non\-existing document$/, function(callback) {
+    this.generateDocumentId()
+    callback()
+  })
+
+  this.Given(/^a collection with a document$/, function(callback) {
     var world = this
+    this.generateCollectionId()
+    Step(
+      function post() {
+        world.post(world.collectionPath(world.collection), '{"a": "b"}', this) 
+      },
+      function callCallback(err, location) {
+        if (err) throw err
+        world.doc1 = lastPathElement(location)
+        world.doc2 = null
+        callback()
+      }
+    )
+   })
+
+  this.Given(/^a collection with documents$/, function(callback) {
+    var world = this
+    this.generateCollectionId()
     Step(
       function post1() {
-        world.post(world.collectionPath(), '{"a": "b"}', this) 
+        world.post(world.collectionPath(world.collection), '{"a": "b"}', this) 
       },
-      function post2(err) {
+      function post2(err, location) {
         if (err) throw err
-        world.post(world.collectionPath(), '{"c": "d"}', this) 
+        world.doc1 = lastPathElement(location)
+        world.post(world.collectionPath(world.collection), '{"c": "d"}', this) 
       },
-      function callCallback(err) {
+      function callCallback(err, location) {
         if (err) throw err
+        world.doc2 = lastPathElement(location)
         callback()
       }
     )
@@ -42,58 +68,68 @@ var HttpStepsWrapper = function () {
  
   /* WHEN */
 
-  this.When(/^I GET the root URI$/, function(callback) {
-    this.get('/', callback)
+ this.When(/^I GET the root URI$/, function(callback) {
+    this.get(this.rootPath(), callback)
   })
 
   this.When(/^I access the root URI with the OPTIONS verb$/, function(callback) {
-    this.options('/', callback)
+    this.options(this.rootPath(), callback)
   })
 
   this.When(/^I GET the collection$/, function(callback) {
-    this.get(this.collectionPath(), callback)
+    this.get(this.collectionPath(this.collection), callback)
   })
 
   this.When(/^I DELETE the collection$/, function(callback) {
-    this.delete(this.collectionPath(), callback)
+    this.delete(this.collectionPath(this.collection), callback)
+  })
+
+  this.When(/^I GET the document$/, function(callback) {
+    console.log(this.documentPath(this.collection, this.doc1))
+    this.get(this.documentPath(this.collection, this.doc1), callback)
   })
  
   /* THEN */
   
   this.Then(/^the http status should be (\d+)$/, function(status, callback) {
-    if (!assertResponse(this.lastResponse(), callback)) { return }
-    if (this.lastResponse().statusCode != status) {
-      callback.fail("The last http response did not have the expected status, expected " + status + " but got " + this.lastResponse().status)
+    if (!assertResponse(this.lastResponse, callback)) { return }
+    if (this.lastResponse.statusCode != status) {
+      callback.fail("The last http response did not have the expected status, expected " + status + " but got " + this.lastResponse.status)
     } else {
       callback()
     }
   })
 
   this.Then(/^I should see no content$/, function(callback) {
-    if (!assertResponse(this.lastResponse(), callback)) { return }
-    if (this.lastResponse().body) {
-      callback.fail("The last request had some content in the response body, I expected no content. Response body: \n\n" + this.lastResponse().body)
+    if (!assertResponse(this.lastResponse, callback)) { return }
+    if (this.lastResponse.body) {
+      callback.fail("The last request had some content in the response body, I expected no content. Response body: \n\n" + this.lastResponse.body)
     } else {
       callback()
     }
   })
  
   this.Then(/^I should see "([^"]*)"$/, function(content, callback) {
-    if (!assertBodyContains(this.lastResponse(), content, callback)) { return } 
+    if (!assertBodyContains(this.lastResponse, content, callback)) { return } 
     callback()
   })
 
-
   this.Then(/^I should see an empty list of documents$/, function(callback) {
-    if (!assertBodyIs(this.lastResponse(), '[]', callback)) { return }
+    if (!assertBodyIs(this.lastResponse, '[]', callback)) { return }
     callback()
   })
 
   this.Then(/^I should see a list of documents$/, function(callback) {
-    if (!assertBodyContains(this.lastResponse(), '{"a":"b","_id":"', callback)) { return }
-    if (!assertBodyContains(this.lastResponse(), '{"c":"d","_id":"', callback)) { return }
+    if (!assertBodyContains(this.lastResponse, '{"a":"b","_id":"', callback)) { return }
+    if (!assertBodyContains(this.lastResponse, '{"c":"d","_id":"', callback)) { return }
     callback()
   })
+
+  this.Then(/^I should see the document$/, function(callback) {
+    if (!assertBodyContains(this.lastResponse, '{"a":"b","_id":"', callback)) { return }
+    callback()
+  })
+
 
   function assertResponse(lastResponse, callback) {
     if (!lastResponse) {
@@ -128,6 +164,11 @@ var HttpStepsWrapper = function () {
       return false
     } 
     return true
+  }
+
+  function lastPathElement(uri) {
+    var path = url.parse(uri).pathname
+    return path.slice(path.lastIndexOf('/') + 1)
   }
 }
 
