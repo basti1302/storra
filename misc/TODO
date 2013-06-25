@@ -30,7 +30,6 @@ different). Use the "pass explicit null style" everywhere.
 * Check out warehouse.js and RQL
 
 = Tests =
-* More acceptance tests
 * Performance tests
   - Performance testing with different backends, without network latency, without concurrent requests
   - Load/throughput tests with a huge number of concurrent requests - choose a backend, which supports this scenario well. Second step: Execute these tests with different backends.
