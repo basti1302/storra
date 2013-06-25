@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var url = require('url')
 var Step = require('step')
@@ -6,8 +6,6 @@ var Step = require('step')
 var HttpStepsWrapper = function () {
 
   this.World = require("../support/world.js").World
-
-  var self = this
 
   this.expectedDocumentContent = null
 
@@ -54,10 +52,10 @@ var HttpStepsWrapper = function () {
     this.generateCollectionId()
     Step(
       function post1() {
-        world.post(world.collectionPath(world.collection), '{"a": "b"}', this) 
+        world.post(world.collectionPath(world.collection), '{"a": "b"}', this)
       },
       function post2(err, location) {
-        if (err) throw err
+        if (err) { throw err }
         world.doc1 = lastPathElement(location)
         world.post(world.collectionPath(world.collection), '{"c": "d"}', this) 
       },
@@ -71,7 +69,7 @@ var HttpStepsWrapper = function () {
  
   /* WHEN */
 
- this.When(/^I GET the root URI$/, function(callback) {
+  this.When(/^I GET the root URI$/, function(callback) {
     this.get(this.rootPath(), callback)
   })
 
@@ -95,10 +93,10 @@ var HttpStepsWrapper = function () {
     var world = this
     Step(
       function post() {
-        world.post(world.collectionPath(world.collection), '{"x": "y"}', this) 
+        world.post(world.collectionPath(world.collection), '{"x": "y"}', this)
       },
       function callCallback(err, location) {
-        if (err) throw err
+        if (err) { throw err }
         world.doc1 = lastPathElement(location)
         world.doc2 = null
         world.expectedDocumentContent = '{"x":"y","_id":"'
@@ -111,10 +109,10 @@ var HttpStepsWrapper = function () {
     var world = this
     Step(
       function put() {
-        world.put(world.documentPath(world.collection, world.doc1), '{"Storra": "rocks!"}', this) 
+        world.put(world.documentPath(world.collection, world.doc1), '{"Storra": "rocks!"}', this)
       },
       function callCallback(err) {
-        if (err) throw err
+        if (err) { throw err }
         world.expectedDocumentContent = '{"Storra":"rocks!","_id":"'
         callback()
       }
@@ -129,6 +127,7 @@ var HttpStepsWrapper = function () {
   
   this.Then(/^the http status should be (\d+)$/, function(status, callback) {
     if (!assertResponse(this.lastResponse, callback)) { return }
+    // deliberately using != here (no need to cast integer/string)
     if (this.lastResponse.statusCode != status) {
       callback.fail("The last http response did not have the expected status, expected " + status + " but got " + this.lastResponse.statusCode)
     } else {
@@ -198,7 +197,7 @@ var HttpStepsWrapper = function () {
     if (lastResponse.body.indexOf(expectedContent) === -1) {
       callback.fail("The last response did not have the expected content. Expected\n\n" + lastResponse.body + "\nto contain\n\n" + expectedContent)
       return false
-    } 
+    }
     return true
   }
 

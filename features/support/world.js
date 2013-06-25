@@ -1,3 +1,5 @@
+'use strict';
+
 var request = require('request')
 var uuid = require('node-uuid')
 

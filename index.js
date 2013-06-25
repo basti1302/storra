@@ -5,7 +5,7 @@
  * Use "node index.js" to start the server.
  */
 
-'use strict'
+'use strict';
 
 var startTime = Date.now()
 var log = require('./lib/log')
@@ -21,6 +21,12 @@ var server = new StorraServer()
 
 // TODO !!!Use domains to handle uncaught exceptions!!!!
 
+function shutdown() {
+  log.info('Storra is about to terminate.')
+  server.shutdown()
+  log.info('Good bye.')
+}
+
 process.on('exit', function () {
   shutdown()
 })
@@ -33,12 +39,6 @@ signals.forEach(function(signal) {
     process.exit(0)
   })
 })
-
-function shutdown() {
-  log.info('Storra is about to terminate.')
-  server.shutdown()
-  log.info('Good bye.')
-}
 
 log.info("using backend: " + global.storra_config.core.backend)
 

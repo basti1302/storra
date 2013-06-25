@@ -1,6 +1,6 @@
-module.exports = function(grunt) {
+'use strict';
 
-  "use strict"
+module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -14,6 +14,11 @@ module.exports = function(grunt) {
       files: ['**/*.js*', '.jshintrc', '!node_modules/**/*.js*'],
       options: {
         jshintrc: '.jshintrc'
+      },
+      ignore_warning: {
+        options: {
+          '-W013': true,
+        }
       }
     },
     /*

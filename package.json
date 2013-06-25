@@ -27,9 +27,11 @@
     "nstore": "0.5.1"
   },
   "comment_devDependencies": {
-    "jasmine-node": "jasmine-node 1.2.x needs to be installed to execute specs, but prefers to be installed globally which is not possible via package.json - npm install -g jasmine-node@1.2.x",
-    "cucumber.js": "cucumber.js needs to be installed to execute acceptance tests, but prefers to be installed globally which is not possible via package.json - npm install -g cucumber",
-    "supervisor": "Using supervisor during development is also highly recommended, though not required. npm install -g supervisor."
+    "comment": "Some stuff should be installed globally by doing npm install -g <package>@<version>. There is no way to do that via package.json. So it is just mentioned here as a reminder.",
+    "jasmine-node": "1.2.x",
+    "cucumber.js": "~0.3.0",
+    "grunt-cli": "~0.4.1",
+    "supervisor": "Using supervisor during development is also highly recommended."
   },
   "devDependencies": {
     "grunt": "~0.4.1",
