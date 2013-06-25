@@ -16,8 +16,7 @@ Feature: Create a document
     And I should see the document
 
   Scenario: Conflict while creating a document
-    TODO 
-
+    TODO not implemented in storra yet 
 #    When creating a document that has an _id delivered by the client (in the POST body JSON)
 #    And there already exists a document with this _id
 #    Then the http status should be 409

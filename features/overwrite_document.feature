@@ -4,12 +4,16 @@ Feature: Overwrite a document
   So that it is up to date
 
   Scenario: Overwrite an existing document
-    Given a document
-    When I overwrite the document
+    Given a collection with a document
+    When I PUT the document
     Then the http status should be 204
     And I should see no content
     # status 200 and the updated entity in the response body would also be appropriate.
     # What do we want? Do we want that to be configurable?
 
   Scenario: Trying to overwrite a non-existing document
-    ... PUT should result in 404 when doc does not exist
+    Given an empty collection
+    And a non-existing document
+    When I PUT the document
+    Then the http status should be 404
+    And I should see "The requested resource was not found."

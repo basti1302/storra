@@ -38,8 +38,16 @@ var World = function World(callback) {
       if (error) {
         return callback(new Error("Error on POST request to " + uri + ": " + error.message))
       }
-      else if (response.statusCode != 201) {
-        return callback(new Error("Not 201 on POST request to " + uri + ": " + response.statusCode))
+      self.lastResponse = response
+      callback(null, self.lastResponse.headers['location'])
+    })
+  }
+ 
+  this.put = function(path, requestBody, callback) {
+    var uri = this.uri(path)
+    request({url: uri, body: requestBody, method: 'PUT'}, function(error, response, responseBody) {
+      if (error) {
+        return callback(new Error("Error on PUT request to " + uri + ": " + error.message))
       }
       self.lastResponse = response
       callback(null, self.lastResponse.headers['location'])
@@ -51,9 +59,6 @@ var World = function World(callback) {
     request({url: uri, method: 'DELETE'}, function(error, response, responseBody) {
       if (error) {
         return callback(new Error("Error on DELETE request to " + uri + ": " + error.message))
-      }
-      else if (response.statusCode != 204) {
-        return callback(new Error("Not 204 on DELETE request to " + uri + ": " + response.statusCode))
       }
       self.lastResponse = response
       callback()

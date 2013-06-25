@@ -106,6 +106,20 @@ var HttpStepsWrapper = function () {
       }
     )
   })
+  
+  this.When(/^I PUT the document$/, function(callback) {
+    var world = this
+    Step(
+      function put() {
+        world.put(world.documentPath(world.collection, world.doc1), '{"Storra": "rocks!"}', this) 
+      },
+      function callCallback(err) {
+        if (err) throw err
+        world.expectedDocumentContent = '{"Storra":"rocks!","_id":"'
+        callback()
+      }
+    )
+  })
  
   this.When(/^I DELETE the document$/, function(callback) {
     this.delete(this.documentPath(this.collection, this.doc1), callback)
