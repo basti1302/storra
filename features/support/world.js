@@ -60,7 +60,6 @@ var World = function World(callback) {
     })
   }
 
- 
   this.options = function(path, callback) {
     var uri = this.uri(path)
     request({"uri": uri, method: "OPTIONS"}, function(error, response, body) {

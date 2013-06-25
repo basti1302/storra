@@ -9,6 +9,8 @@ var HttpStepsWrapper = function () {
 
   var self = this
 
+  this.expectedDocumentContent = null
+
   /* GIVEN */
 
   this.Given(/^an empty collection$/, function(callback) {
@@ -41,10 +43,11 @@ var HttpStepsWrapper = function () {
         if (err) throw err
         world.doc1 = lastPathElement(location)
         world.doc2 = null
+        world.expectedDocumentContent = '{"a":"b","_id":"'
         callback()
       }
     )
-   })
+  })
 
   this.Given(/^a collection with documents$/, function(callback) {
     var world = this
@@ -85,8 +88,27 @@ var HttpStepsWrapper = function () {
   })
 
   this.When(/^I GET the document$/, function(callback) {
-    console.log(this.documentPath(this.collection, this.doc1))
     this.get(this.documentPath(this.collection, this.doc1), callback)
+  })
+
+  this.When(/^I POST a document$/, function(callback) {
+    var world = this
+    Step(
+      function post() {
+        world.post(world.collectionPath(world.collection), '{"x": "y"}', this) 
+      },
+      function callCallback(err, location) {
+        if (err) throw err
+        world.doc1 = lastPathElement(location)
+        world.doc2 = null
+        world.expectedDocumentContent = '{"x":"y","_id":"'
+        callback()
+      }
+    )
+  })
+ 
+  this.When(/^I DELETE the document$/, function(callback) {
+    this.delete(this.documentPath(this.collection, this.doc1), callback)
   })
  
   /* THEN */
@@ -94,7 +116,7 @@ var HttpStepsWrapper = function () {
   this.Then(/^the http status should be (\d+)$/, function(status, callback) {
     if (!assertResponse(this.lastResponse, callback)) { return }
     if (this.lastResponse.statusCode != status) {
-      callback.fail("The last http response did not have the expected status, expected " + status + " but got " + this.lastResponse.status)
+      callback.fail("The last http response did not have the expected status, expected " + status + " but got " + this.lastResponse.statusCode)
     } else {
       callback()
     }
@@ -126,7 +148,7 @@ var HttpStepsWrapper = function () {
   })
 
   this.Then(/^I should see the document$/, function(callback) {
-    if (!assertBodyContains(this.lastResponse, '{"a":"b","_id":"', callback)) { return }
+    if (!assertBodyContains(this.lastResponse, this.expectedDocumentContent, callback)) { return }
     callback()
   })
 
