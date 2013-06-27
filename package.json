@@ -6,7 +6,7 @@
   "contributors": [],
   "preferGlobal": "true",
   "bin": {
-    "storra": "./index.js"
+    "storra": "./lib/index.js"
   },
   "scripts": {
     "start": "node index.js",
