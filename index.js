@@ -9,12 +9,12 @@
 
 var startTime = Date.now()
 var log = require('./lib/log')
-log.info("Starting Storra...")
+log.info('Starting Storra...')
 
 var configReader = new (require('./lib/config_reader'))()
 configReader.read('../storra.yml')
 
-var StorraServer = require("./lib/server")
+var StorraServer = require('./lib/server')
 var server = new StorraServer()
 
 /* register various handlers */
@@ -40,6 +40,6 @@ signals.forEach(function(signal) {
   })
 })
 
-log.info("using backend: " + global.storra_config.core.backend)
+log.info('using backend: ' + global.storraConfig.core.backend)
 
 server.start(startTime)

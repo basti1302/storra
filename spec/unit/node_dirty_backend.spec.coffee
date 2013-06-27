@@ -29,7 +29,8 @@ describe "The node-dirty backend (with mocked dependencies)", ->
       'exists'
       'unlink'
     ])
-    NodeDirtyConnector = sandbox.require '../../lib/backends/node_dirty_backend',
+    NodeDirtyConnector =
+      sandbox.require '../../lib/backends/node_dirty_backend',
       requires:
         'dirty': dirty
         'fs': fs
@@ -66,7 +67,8 @@ describe "The node-dirty backend (with mocked dependencies)", ->
     backend.read('collection', 'key', writeResponse)
     whenCallback(collection.on, 1).thenCallIt(backend)
     expect(collection.get).toHaveBeenCalledWith('key')
-    expect(writeResponse).toHaveBeenCalledWith(undefined, {a: "b", _id: 'key'}, 'key')
+    expect(writeResponse).toHaveBeenCalledWith(undefined, {a: "b", _id: 'key'},
+        'key')
 
   it "says 404 when reading an non-existing document", ->
     collection.get.andReturn(null)
@@ -74,7 +76,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
     whenCallback(collection.on, 1).thenCallIt(backend)
     expect(collection.get).toHaveBeenCalledWith('key')
     expect(writeResponse).toHaveBeenCalledWith(jasmine.any(Object), null, 'key')
-    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
 
   it "creates a document", ->
     backend.create('collection', 'document', writeResponse)
@@ -94,7 +96,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
     whenCallback(collection.on, 1).thenCallIt(backend)
     expect(collection.set).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalled()
-    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)

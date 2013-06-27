@@ -9,15 +9,16 @@ describe "Integration from routing to backend test: storra", ->
   collectionName = null
   collectionUrl = null
   keyName = null
-  keyUrl = null 
- 
+  keyUrl = null
+
   router = null
   requests = []
   responses = []
 
   beforeEach ->
-    # TODO parameterize this test like backend_integration spec with all possible backends
-    global.storra_config = {core: {backend: './backends/node_dirty_backend'}}
+    # TODO parameterize this test like backend_integration spec with all
+    # possible backends
+    global.storraConfig = {core: {backend: './backends/node_dirty_backend'}}
     Router = require '../../lib/router'
     router = new Router()
 
@@ -25,7 +26,7 @@ describe "Integration from routing to backend test: storra", ->
     collectionUrl = "/#{collectionName}"
     keyName = 'key'
     keyUrl = "#{collectionUrl}/#{keyName}"
-  
+
     requests = []
     responses = []
 
@@ -72,17 +73,19 @@ describe "Integration from routing to backend test: storra", ->
   # response is 200 with an empty collection, though the collection did not
   # exist before this request. Since a GET request SHOULD not have any side
   # effects on the resource (in particular, a GET should not create a new
-  # resource, not creating the collection on the fly would be much better.
-  # In this case we could return 404. OTOH, some backends (for example, MongoDB)
-  # do create the collection automatically with the first request. To achieve 
-  # the desired behaviour we would need to check for existence before every list/
+  # resource, not creating the collection on the fly would be much better. In
+  # this case we could return 404. OTOH, some backends (for example, MongoDB) do
+  # create the collection automatically with the first request. To achieve the
+  # desired behaviour we would need to check for existence before every list/
   # query by other means, which might have an performance impact.
-  it "responds to GET /collection with 200 if collection does not exist - though 404 would be correct", ->
+  it "responds to GET /collection with 200 if collection does not exist - though
+      404 would be correct", ->
     forGet collectionUrl, (response) ->
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(['[',']'])
 
-  it "responds to GET /collection with 200 if collection exists and has a document", ->
+  it "responds to GET /collection with 200 if collection exists and has a
+      document", ->
     forRequests [
       new MockRequest('POST', collectionUrl, '{"a": "b"}')
       new MockRequest('GET', collectionUrl)
@@ -92,7 +95,7 @@ describe "Integration from routing to backend test: storra", ->
       expect(responses[1].body[0]).toEqual('[')
       expect(responses[1].body[1]).toContain('{"a":"b","_id":')
       expect(responses[1].body[2]).toEqual(']')
-      
+
   it "responds to PUT /collection with 501 (not implemented)", ->
     forPut collectionUrl, (response) ->
       expect(response.status).toEqual(501)
@@ -123,15 +126,16 @@ describe "Integration from routing to backend test: storra", ->
   it "responds to GET /collection/key with 404 if document does not exist", ->
     forGet '/collection/non-existing-doc', (response) ->
       expect(response.status).toEqual(404)
-      expect(response.body[0]).toContain('The requested resource was not found.')
+      expect(response.body[0]).toContain(
+        'The requested resource was not found.')
 
   it "responds to GET /collection/key with 200 if documents exists", ->
     location = null
     forRequests [
       new MockRequest('POST', collectionUrl, '{"a": "b"}', null, (response) ->
-        location = response.headers['Location']
+        location = response.headers['location']
       )
-      new MockRequest('GET', 'will be set by "after" handler', null, (request) ->
+      new MockRequest('GET', 'will be set by after handler', null, (request) ->
         request.url = location
       , null)
     ], (response) ->
@@ -153,7 +157,7 @@ describe "Integration from routing to backend test: storra", ->
     location = null
     forRequests [
       new MockRequest('POST', collectionUrl, '{"e": "f"}', null, (response) ->
-        location = response.headers['Location']
+        location = response.headers['location']
       )
       new MockRequest('PUT', 'ignored', '{"x": "y"}', (request) ->
         request.url = location
@@ -177,7 +181,7 @@ describe "Integration from routing to backend test: storra", ->
     location = null
     forRequests [
       new MockRequest('POST', collectionUrl, '{"a": "b"}', null, (response) ->
-        location = response.headers['Location']
+        location = response.headers['location']
       )
       new MockRequest('GET', 'ignored', null, (request) ->
         request.url = location
@@ -267,11 +271,14 @@ describe "Integration from routing to backend test: storra", ->
 
   expectOptionsResponse = (response) ->
     expect(response.status).toEqual(200)
-    expect(response.headers["Access-Control-Allow-Origin"]).toEqual("*")
-    expect(response.headers["Access-Control-Allow-Headers"]).toEqual("X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept")
-    expect(response.headers["Access-Control-Allow-Methods"]).toEqual("POST, GET, PUT, DELETE, OPTIONS")
-    expect(response.headers["Access-Control-Allow-Credentials"]).toBe(true)
-    expect(response.headers["Access-Control-Max-Age"]).toEqual("86400")
+    expect(response.headers["access-control-allow-origin"]).toEqual("*")
+    expect(response.headers["access-control-allow-headers"])
+        .toEqual("X-Requested-With, Access-Control-Allow-Origin,
+ X-HTTP-Method-Override, Content-Type, Authorization, Accept")
+    expect(response.headers["access-control-allow-methods"])
+        .toEqual("POST, GET, PUT, DELETE, OPTIONS")
+    expect(response.headers["access-control-allow-credentials"]).toBe(true)
+    expect(response.headers["access-control-max-age"]).toEqual("86400")
 
   class MockRequest
     constructor: (@method, path, @body, @before, @after) ->

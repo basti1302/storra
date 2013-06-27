@@ -26,7 +26,7 @@ describe "The collection cache", ->
     expect(cache.size).toEqual(2)
     cache.put('z', {})
     expect(cache.size).toEqual(3)
-    
+
   it "does not increases the cache size when overwriting", ->
     expect(cache.size).toEqual(0)
     cache.put('x', {})
@@ -57,7 +57,8 @@ describe "The collection cache", ->
 
     cache.put('z', {})
     expect(cache.lru.tail.previous.previous.previous.previous).toBeUndefined()
-    expect(cache.lru.tail.previous.previous.previous.key).toEqual(cache.lru.headVal)
+    expect(cache.lru.tail.previous.previous.previous.key).toEqual(
+      cache.lru.headVal)
     expect(cache.lru.tail.previous.previous.key).toEqual('x')
     expect(cache.lru.tail.previous.key).toEqual('y')
     expect(cache.lru.tail.key).toEqual('z')
@@ -68,7 +69,8 @@ describe "The collection cache", ->
     cache.put('z', {})
     cache.put('y', {})
     expect(cache.lru.tail.previous.previous.previous.previous).toBeUndefined()
-    expect(cache.lru.tail.previous.previous.previous.key).toEqual(cache.lru.headVal)
+    expect(cache.lru.tail.previous.previous.previous.key).toEqual(
+      cache.lru.headVal)
     expect(cache.lru.tail.previous.previous.key).toEqual('x')
     expect(cache.lru.tail.previous.key).toEqual('z')
     expect(cache.lru.tail.key).toEqual('y')
@@ -81,7 +83,7 @@ describe "The collection cache", ->
     expect(cache.lru.tail.previous.previous.key).toEqual(cache.lru.headVal)
     expect(cache.lru.tail.previous.key).toEqual('y')
     expect(cache.lru.tail.key).toEqual('x')
-  
+
   it "knows the correct lru order when overwriting the last", ->
     cache.put('x', {})
     cache.put('y', {})
@@ -110,7 +112,8 @@ describe "The collection cache", ->
     cache.get('x')
 
     expect(cache.lru.tail.previous.previous.previous.previous).toBeUndefined()
-    expect(cache.lru.tail.previous.previous.previous.key).toEqual(cache.lru.headVal)
+    expect(cache.lru.tail.previous.previous.previous.key).toEqual(
+      cache.lru.headVal)
     expect(cache.lru.tail.previous.previous.key).toEqual('z')
     expect(cache.lru.tail.previous.key).toEqual('y')
     expect(cache.lru.tail.key).toEqual('x')
@@ -124,7 +127,8 @@ describe "The collection cache", ->
     cache.put('z', {})
 
     expect(cache.lru.tail.previous.previous.previous.previous).toBeUndefined()
-    expect(cache.lru.tail.previous.previous.previous.key).toEqual(cache.lru.headVal)
+    expect(cache.lru.tail.previous.previous.previous.key).toEqual(
+      cache.lru.headVal)
     expect(cache.lru.tail.previous.previous.key).toEqual('y')
     expect(cache.lru.tail.previous.key).toEqual('x')
     expect(cache.lru.tail.key).toEqual('z')

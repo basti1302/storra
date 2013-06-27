@@ -1,16 +1,17 @@
-module.exports = TestConfigurationReader
+'use strict';
 
 function TestConfigurationReader() {
   this.createGlobalConfig = function() {
-    global.storra_config = {
+    global.storraConfig = {
       mergeDefaults: function(defaults) {
-        for (key in defaults) {
-          global.storra_config[key] = defaults[key]
+        for (var key in defaults) {
+          if (defaults.hasOwnProperty(key)) {
+            global.storraConfig[key] = defaults[key]
+          }
         }
       }
     }
   }
 }
 
-
-
+module.exports = TestConfigurationReader

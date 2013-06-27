@@ -1,6 +1,6 @@
-# This spec tests the node-dirty backend without mocking/spying node-dirty or any
-# other dependencies, that is, it truely accesses the node-dirty in-memory db and
-# even lets node-dirty persist to disk.
+# This spec tests the node-dirty backend without mocking/spying node-dirty or
+# any other dependencies, that is, it truely accesses the node-dirty in-memory
+# db and even lets node-dirty persist to disk.
 describe "Common backend integration test:", ->
 
   TIMEOUT = 5000
@@ -10,7 +10,7 @@ describe "Common backend integration test:", ->
   uuid = require('node-uuid')
 
   logIntermediateResults = true
-  
+
   (new (require('../test_config_reader'))()).createGlobalConfig()
 
   # define parameterized test
@@ -24,11 +24,10 @@ describe "Common backend integration test:", ->
 
       standardWaitsFor = () ->
         return finished
-      waitForStepsToFinish = () -> waitsFor(standardWaitsFor, "all steps finishing", TIMEOUT)
+      waitForStepsToFinish = () -> waitsFor(standardWaitsFor,
+          "all steps finishing", TIMEOUT)
 
       beforeEach ->
-        log.error "IN beforeEach 1: #{JSON.stringify(global.storra_config)}"
-        log.error "IN beforeEach 2: #{JSON.stringify(global.storra_config)}"
         finished = false
         errors = []
         Connector = require backend_module
@@ -43,12 +42,13 @@ describe "Common backend integration test:", ->
             # If the backend under test is not there, we just kill the node.js
             # process to immediately stop the test run. This is extremely
             # questionable, but right now it helps - otherwise you'll get a lot
-            # of failures in the test run and wonder what on earth is going wrong.
-            # It would be nice if Jasmine offered a version of the fail method
-            # that also stops the current spec (right now, jasmine just continues
-            # with the spec and reports all failures at the end).
+            # of failures in the test run and wonder what on earth is going
+            # wrong. It would be nice if Jasmine offered a version of the fail
+            # method that also stops the current spec (right now, jasmine just
+            # continues with the spec and reports all failures at the end).
             log.error(err)
-            log.error("Backend #{backend_name} is not available, killing test process!")
+            log.error("Backend #{backend_name} is not available, killing test
+                process!")
             process.exit(1)
         )
 
@@ -60,7 +60,7 @@ describe "Common backend integration test:", ->
         backend.closeConnection (err) ->
           if (err)
             log.error(err)
- 
+
       it "removes collections idempotently", ->
         runs ->
           Step(
@@ -95,7 +95,7 @@ describe "Common backend integration test:", ->
           )
         waitForStepsToFinish()
         runs ->
-          expect(errors[0].http_status).toBe(404)
+          expect(errors[0].httpStatus).toBe(404)
           expect(non_existing_doc).toBeNull()
 
       it "creates and reads documents", ->
@@ -139,7 +139,8 @@ describe "Common backend integration test:", ->
             ,
             (error) ->
               if (logIntermediateResults)
-                log.info("list end -> error, list: #{error}, #{JSON.stringify(listing)}")
+                log.info("list end -> error, list: #{error},
+                    #{JSON.stringify(listing)}")
               errors.push error
               finished = true
           )
@@ -147,7 +148,7 @@ describe "Common backend integration test:", ->
         runs ->
           expectNoErrors()
           expect(listing.length).toEqual(0)
- 
+
       it "lists a collection", ->
         keys = []
         listing = []
@@ -176,9 +177,10 @@ describe "Common backend integration test:", ->
                   listing.push doc
               ,this)
             ,
-             (error) ->
+            (error) ->
               if (logIntermediateResults)
-                log.info("list -> error, list: #{error}, #{JSON.stringify(listing)}")
+                log.info("list -> error, list: #{error},
+                    #{JSON.stringify(listing)}")
               errors.push error
               # one extra step (which do not really belong into this spec):
               # use key from listing to read single document
@@ -214,13 +216,15 @@ describe "Common backend integration test:", ->
           else if (read_document._id.toString() == keys[1])
             expect(fromListing[1]).toEqual(read_document)
           else
-            this.fail("id of read document neither matched the key of the first nor of the second created document")
+            this.fail("id of read document neither matched the key of the
+                first nor of the second created document")
 
       it "says 404 when updating a non-existing document", ->
         runs ->
           Step(
             () ->
-              backend.update(collection, '123456789012', {second_attribute: 123, third_attribute: 456}, this)
+              backend.update(collection, '123456789012',
+                  {second_attribute: 123, third_attribute: 456}, this)
             ,
             (error) ->
               if (logIntermediateResults)
@@ -230,7 +234,7 @@ describe "Common backend integration test:", ->
           )
         waitForStepsToFinish()
         runs ->
-          expect(errors[0].http_status).toBe(404)
+          expect(errors[0].httpStatus).toBe(404)
 
 
       it "updates a document", ->
@@ -246,7 +250,8 @@ describe "Common backend integration test:", ->
                 log.info("create -> error, key: #{error}, #{key}")
               errors.push error
               key_from_response = key.toString()
-              backend.update(collection, key_from_response, {second_attribute: 123, third_attribute: 'baz'}, this)
+              backend.update(collection, key_from_response,
+                  {second_attribute: 123, third_attribute: 'baz'}, this)
             ,
             (error) ->
               if (logIntermediateResults)
@@ -308,7 +313,7 @@ describe "Common backend integration test:", ->
         waitForStepsToFinish()
         runs ->
           expectNoError(i, error) for error, i in errors[0..2]
-          expect(errors[3].http_status).toBe(404)
+          expect(errors[3].httpStatus).toBe(404)
           expect(read_document_before_remove).not.toBeNull()
           expect(read_document_after_remove).toBeNull()
 
@@ -349,7 +354,7 @@ describe "Common backend integration test:", ->
         waitForStepsToFinish()
         runs ->
           expectNoError(i, error) for error, i in errors[0..2]
-          expect(errors[3].http_status).toBe(404)
+          expect(errors[3].httpStatus).toBe(404)
           expect(read_document_after_remove).toBeNull()
 
       it "does not return a document from a removed collection", ->
@@ -391,7 +396,7 @@ describe "Common backend integration test:", ->
         waitForStepsToFinish()
         runs ->
           expectNoError(i, error) for error, i in errors[0..2]
-          expect(errors[3].http_status).toBe(404)
+          expect(errors[3].httpStatus).toBe(404)
           expect(read_document_before_remove).not.toBeNull()
           expect(read_document_after_remove).toBeNull()
 
@@ -399,13 +404,13 @@ describe "Common backend integration test:", ->
       ###
       HELPER FUNCTIONS
       ###
- 
+
       expectNoErrors = () ->
         expectNoError(i, error) for error, i in errors[0..errors.length - 1]
 
       expectNoError = (index, error) ->
         expect(error == null || error == undefined).toBe(true)
-        if ! (error == null || error == undefined) 
+        if ! (error == null || error == undefined)
           log.error("Unexpected error in test: [#{index}]: #{error}")
 
       findInArray = (array, id) ->

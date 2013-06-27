@@ -1,1 +1,1 @@
-find . -name .*.un~ -delete
+find . -name *.un~ -delete

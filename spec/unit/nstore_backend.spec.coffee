@@ -41,11 +41,12 @@ describe "The nstore backend", ->
   it "lists a collection", ->
     backend.list('collection', writeDocument, writeEnd)
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.all, 0).thenCallIt(backend, undefined, {key1: {a: "b"}, key2: {c: "d"}})
+    whenCallback(collection.all, 0).thenCallIt(backend, undefined,
+        {key1: {a: "b"}, key2: {c: "d"}})
     expect(writeDocument).toHaveBeenCalledWith({a: "b", _id: "key1"})
     expect(writeDocument).toHaveBeenCalledWith({c: "d", _id: "key2"})
     expect(writeEnd).toHaveBeenCalledWith(null)
- 
+
   it "passes on errors when listing a collection fails", ->
     backend.list('collection', writeDocument, writeEnd)
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
@@ -69,7 +70,8 @@ describe "The nstore backend", ->
   it "reads a document", ->
     backend.read('collection', 'key', writeResponse)
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.get, 1).thenCallIt(backend, 'error', 'document', 'key')
+    whenCallback(collection.get, 1).thenCallIt(backend, 'error', 'document',
+        'key')
     expect(writeResponse).toHaveBeenCalledWith('error', 'document', 'key')
 
   it "creates a document", ->
@@ -92,7 +94,7 @@ describe "The nstore backend", ->
     whenCallback(collection.get, 1).thenCallIt(backend, 'error')
     expect(collection.save).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalled()
-    expect(writeResponse.mostRecentCall.args[0].http_status).toBe(404)
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toBe(404)
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
@@ -107,4 +109,4 @@ describe "The nstore backend", ->
       thenCallIt: (callOn, args...) ->
         callback.call(callOn, args...)
     return ret
-   
+

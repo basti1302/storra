@@ -1,5 +1,5 @@
-# This spec tests the MongoDB backend by mocking/spying the MongoDB node driver and any
-# other dependency.
+# This spec tests the MongoDB backend by mocking/spying the MongoDB node driver
+# and any other dependency.
 describe "The MongoDB backend (with mocked dependencies)", ->
 
   sandbox = null
@@ -18,7 +18,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     (new (require('../test_config_reader'))()).createGlobalConfig()
 
     sandbox = require 'sandboxed-module'
-    
+
     cursor = jasmine.createSpyObj('cursor', [
       'each'
     ])
@@ -108,8 +108,9 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     , 3 * 10 + 100)
     runs ->
       expect(errorPassedToRequestHandler instanceof Error).toBe(true)
-      expect(errorPassedToRequestHandler.http_status).toEqual(500)
-      expect(errorPassedToRequestHandler.message).toEqual('Could not connect to MongoDB after 3 retries, MongoClient is still in state connecting.')
+      expect(errorPassedToRequestHandler.httpStatus).toEqual(500)
+      expect(errorPassedToRequestHandler.message).toEqual("Could not connect to
+ MongoDB after 3 retries, MongoClient is still in state connecting.")
 
   it "closes the connection on demand", ->
     backend.closeConnection(null)
@@ -132,7 +133,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
 
   it "does not falter when trying to remove a non-existing collection", ->
     backend.removeCollection('collection', writeResponse)
-    whenCallback(db.dropCollection, 1).thenCallIt(backend, new Error('ns not found'), 0)
+    whenCallback(db.dropCollection, 1).thenCallIt(backend,
+        new Error('ns not found'), 0)
     expect(writeResponse).toHaveBeenCalledWith(null)
 
   it "passes up all errors that are not 'ns not found' in removeCollection", ->
@@ -143,23 +145,27 @@ describe "The MongoDB backend (with mocked dependencies)", ->
 
   it "reads a document", ->
     backend.read('collection', 'key', writeResponse)
-    whenCallback(collection.findOne, 1).thenCallIt(backend, undefined, {a: 'b', _id: 'key'})
-    expect(writeResponse).toHaveBeenCalledWith(undefined, {a: 'b', _id: 'key'}, 'key')
+    whenCallback(collection.findOne, 1).thenCallIt(backend, undefined,
+        {a: 'b', _id: 'key'})
+    expect(writeResponse).toHaveBeenCalledWith(undefined,
+        {a: 'b', _id: 'key'}, 'key')
 
   it "passes up the error when reading a document", ->
     backend.read('collection', 'key', writeResponse)
-    whenCallback(collection.findOne, 1).thenCallIt(backend, 'error', {a: 'b', _id: 'key'})
+    whenCallback(collection.findOne, 1).thenCallIt(backend, 'error',
+        {a: 'b', _id: 'key'})
     expect(writeResponse).toHaveBeenCalledWith('error', null, 'key')
 
   it "says 404 when reading an non-existing document", ->
     backend.read('collection', 'key', writeResponse)
     whenCallback(collection.findOne, 1).thenCallIt(backend, undefined, null)
     expect(writeResponse).toHaveBeenCalledWith(jasmine.any(Object), null, 'key')
-    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
 
   it "creates a document", ->
     backend.create('collection', 'document', writeResponse)
-    whenCallback(collection.insert, 2).thenCallIt(backend, undefined, [{_id:{toHexString:()->'the hex string'}}])
+    whenCallback(collection.insert, 2).thenCallIt(backend, undefined,
+        [{_id:{toHexString:() -> 'the hex string'}}])
     expect(writeResponse).toHaveBeenCalledWith(undefined, 'the hex string')
 
   it "passes up the error when creating a document", ->
@@ -186,7 +192,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     backend.update('collection', 'key', 'document', writeResponse)
     whenCallback(collection.update, 3).thenCallIt(backend, undefined, 0)
     expect(writeResponse).toHaveBeenCalled()
-    expect(writeResponse.mostRecentCall.args[0].http_status).toEqual(404)
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
 
   it "creates an error if more than one document have changed", ->
     # This will never happen™. We test the behaviour anyway.

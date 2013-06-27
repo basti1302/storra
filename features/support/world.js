@@ -22,12 +22,13 @@ var World = function World(callback) {
     // MongoDB either accepts a 12 byte string or 24 hex characters
     this.doc1 = uuid.v1().replace(/-/gi, '').substring(0,24)
   }
- 
+
   this.get = function(path, callback) {
     var uri = this.uri(path)
-    request.get(uri, function(error, response, body) {
+    request.get(uri, function(error, response) {
       if (error) {
-        return callback.fail(new Error("Error on GET request to " + uri + ": " + error.message))
+        return callback.fail(new Error('Error on GET request to ' + uri +
+          ': ' + error.message))
       }
       self.lastResponse = response
       callback()
@@ -36,31 +37,37 @@ var World = function World(callback) {
 
   this.post = function(path, requestBody, callback) {
     var uri = this.uri(path)
-    request({url: uri, body: requestBody, method: 'POST'}, function(error, response, responseBody) {
+    request({url: uri, body: requestBody, method: 'POST'},
+        function(error, response) {
       if (error) {
-        return callback(new Error("Error on POST request to " + uri + ": " + error.message))
+        return callback(new Error('Error on POST request to ' + uri + ': ' +
+          error.message))
       }
       self.lastResponse = response
-      callback(null, self.lastResponse.headers['location'])
+      callback(null, self.lastResponse.headers.location)
     })
   }
- 
+
   this.put = function(path, requestBody, callback) {
     var uri = this.uri(path)
-    request({url: uri, body: requestBody, method: 'PUT'}, function(error, response, responseBody) {
+    request({url: uri, body: requestBody, method: 'PUT'},
+        function(error, response) {
       if (error) {
-        return callback(new Error("Error on PUT request to " + uri + ": " + error.message))
+        return callback(new Error('Error on PUT request to ' + uri + ': ' +
+            error.message))
       }
       self.lastResponse = response
-      callback(null, self.lastResponse.headers['location'])
+      callback(null, self.lastResponse.headers.locations)
     })
   }
 
   this.delete = function(path, callback) {
     var uri = this.uri(path)
-    request({url: uri, method: 'DELETE'}, function(error, response, responseBody) {
+    request({url: uri, method: 'DELETE'},
+        function(error, response) {
       if (error) {
-        return callback(new Error("Error on DELETE request to " + uri + ": " + error.message))
+        return callback(new Error('Error on DELETE request to ' + uri + ': ' +
+            error.message))
       }
       self.lastResponse = response
       callback()
@@ -69,9 +76,10 @@ var World = function World(callback) {
 
   this.options = function(path, callback) {
     var uri = this.uri(path)
-    request({"uri": uri, method: "OPTIONS"}, function(error, response, body) {
+    request({'uri': uri, method: 'OPTIONS'}, function(error, response) {
       if (error) {
-        return callback.fail(new Error("Error on OPTIONS request to " + uri + ": " + error.message))
+        return callback.fail(new Error('Error on OPTIONS request to ' + uri +
+            ': ' + error.message))
       }
       self.lastResponse = response
       callback()
@@ -81,7 +89,7 @@ var World = function World(callback) {
   this.rootPath = function() {
     return '/'
   }
- 
+
   this.rootUri = function() {
     return this.uri(this.rootPath())
   }
@@ -89,7 +97,7 @@ var World = function World(callback) {
   this.collectionPath = function(collection) {
     return '/' + collection
   }
- 
+
   this.collectionUri = function(collection) {
     return this.uri(this.collectionPath(collection))
   }
@@ -105,7 +113,7 @@ var World = function World(callback) {
   this.uri = function(path) {
     return env.BASE_URL + path
   }
- 
+
   callback()
 }
 

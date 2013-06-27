@@ -3,8 +3,10 @@
 
 == Build ==
 
-* grunt
-* jslint
+* Only start unit tests in default, not integration tests (because they
+  require Mongo to be up).
+* start storra (but not when its already running) from grunt and execute
+  cucumber.js, then terminate storra again.
 
 
 == Storra Core Features ==
@@ -35,9 +37,12 @@ different). Use the "pass explicit null style" everywhere.
   - Load/throughput tests with a huge number of concurrent requests - choose a backend, which supports this scenario well. Second step: Execute these tests with different backends.
   - Performance tests including *local* network latency and with comparisons to accessing the DB directly
   - Performance tests for distributed scenario (Storra as a hosted service somewhere else) - conclusions?
- 
+
 = HTTP communication =
-* Streaming when returning a collection: Does the current implementation really send doc by doc to the client? Can other requests be responded to in between? 
+* Also return on every request (where appropriate) headers x-storra-collection
+  and x-storra-key or something like that, so that client do not need to parse
+  the location header when they want to access the ids.
+* Streaming when returning a collection: Does the current implementation really send doc by doc to the client? Can other requests be responded to in between?
 * Streaming when returning a collection: Is it better to process multiple documents in one chunk?
 * Write Content-Length header with every request.
 * Evaluate implicit headers (response.setHeader and response.statusCode instead of response.writeHeader) - probably more maintainable than merging headers and then writing them with writeHead.
@@ -123,9 +128,9 @@ different). Use the "pass explicit null style" everywhere.
   - Java (Servlet in War)
   - Python, Ruby
   - node.js
-  
+
   The authentication component is the only server/backend component a storra.com customer needs
-  to set up in its own infrastructure. This is required because with only static assets 
+  to set up in its own infrastructure. This is required because with only static assets
   (html, css, js) there is simply no place where you could put a private key or any other
   (shared) secret.
 

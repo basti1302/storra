@@ -6,10 +6,10 @@ describe "The request handler", ->
   request = null
   response = null
   err404 = new Error("not found")
-  err404.http_status = 404
+  err404.httpStatus = 404
 
   beforeEach ->
-    global.storra_config = {core: {backend: './backend'}}
+    global.storraConfig = {core: {backend: './backend'}}
 
     sandbox = require 'sandboxed-module'
     backend = jasmine.createSpyObj('backend', [
@@ -33,7 +33,7 @@ describe "The request handler", ->
 
     RequestHandler = sandbox.require '../../lib/requesthandler',
       requires:
-        './backend': () -> 
+        './backend': () ->
           backend
     requesthandler = new RequestHandler()
 
@@ -50,7 +50,8 @@ describe "The request handler", ->
 
   it "serves a collection of documents", ->
     requesthandler.list(request, response, 'collection')
-    expect(backend.list).toHaveBeenCalledWith 'collection', jasmine.any(Function), jasmine.any(Function)
+    expect(backend.list).toHaveBeenCalledWith 'collection',
+        jasmine.any(Function), jasmine.any(Function)
     whenCallback(backend.list, 1).thenCallIt(requesthandler, [])
     whenCallback(backend.list, 2).thenCallIt(requesthandler, null)
     expectResponse 200
@@ -63,28 +64,34 @@ describe "The request handler", ->
 
   it "removes a collection", ->
     requesthandler.removeCollection(request, response, 'collection')
-    expect(backend.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler, undefined)
+    expect(backend.removeCollection).toHaveBeenCalledWith 'collection',
+        jasmine.any(Function)
+    whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler,
+        undefined)
     expectResponse 204
     expectNoContent()
 
   it "says 500 if removing a collection fails", ->
     requesthandler.removeCollection(request, response, 'collection')
-    expect(backend.removeCollection).toHaveBeenCalledWith 'collection', jasmine.any(Function)
-    whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler, 'error')
+    expect(backend.removeCollection).toHaveBeenCalledWith 'collection',
+        jasmine.any(Function)
+    whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler,
+        'error')
     expect500()
 
   it "serves a document", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(backend.read, 2).thenCallIt(requesthandler, undefined, {foo: 'bar', _id: 'key'}, 'key')
+    whenCallback(backend.read, 2).thenCallIt(requesthandler, undefined,
+        {foo: 'bar', _id: 'key'}, 'key')
     expectResponse 200
     expectContent('{"foo":"bar","_id":"key"}')
 
   it "says 404 if serving a document fails", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(backend.read, 2).thenCallIt(requesthandler, err404, null, 'key')
+    whenCallback(backend.read, 2).thenCallIt(requesthandler, err404, null,
+        'key')
     expect404()
-    
+
   it "says 500 if serving a document fails for unknown reasons", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
     whenCallback(backend.read, 2).thenCallIt(requesthandler, 'error', {}, 'key')
@@ -95,9 +102,20 @@ describe "The request handler", ->
     stubCreateUpdate()
     expect(backend.create).toHaveBeenCalled()
     whenCallback(backend.create, 2).thenCallIt(requesthandler, undefined, 'key')
-    expectResponse 201
-    # TODO Check if location header is written correctly
-    #expect(response.writeHead).toHaveBeenCalledWith("Location"... )
+    # We only care about the location header here. But Jasmine is a bit stubborn
+    # and without argument captors, it's not so easy to verify just this one
+    # header.
+    expectResponseAndHeaders(201, {
+      "access-control-allow-origin": "*",
+      "access-control-allow-headers": "X-Requested-With,
+ Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type,
+ Authorization, Accept",
+      "access-control-allow-methods": "POST, GET, PUT, DELETE, OPTIONS",
+      "access-control-allow-credentials": true,
+      "access-control-max-age": "86400",
+      "location" : "http://localhost/key",
+      "x-storra-entity-key" : "key"
+    })
     expectNoContent()
 
   it "says 500 if creating a document fails", ->
@@ -140,9 +158,8 @@ describe "The request handler", ->
   it "handles bad requests", ->
     requesthandler.badRequest(response, "some very informational text")
     expectResponse 400
-    #expect(response.write).toHaveBeenCalledWith('I\'m unable to process this request. I\'m terribly sorry.')
-    #expect(response.write).toHaveBeenCalledWith('\nAdditional info: some very informational text')
-    expectContent('I\'m unable to process this request. I\'m terribly sorry.', '\nAdditional info: some very informational text')
+    expectContent('I\'m unable to process this request. I\'m terribly sorry.',
+        '\nAdditional info: some very informational text')
 
   it "handles not found errors", ->
     requesthandler.notFound(response)
@@ -167,6 +184,9 @@ describe "The request handler", ->
 
   expectResponse = (status) ->
     expect(response.writeHead).toHaveBeenCalledWith(status, jasmine.any(Object))
+
+  expectResponseAndHeaders = (status, headers) ->
+    expect(response.writeHead).toHaveBeenCalledWith(status, headers)
 
   expectContent = (content...) ->
     if content and content.length > 0

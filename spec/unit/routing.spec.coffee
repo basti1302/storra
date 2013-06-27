@@ -21,34 +21,35 @@ describe "Request routing:", ->
     RequestHandler = () ->
       requesthandler
 
-    Router = sandbox.require '../../lib/router', 
+    Router = sandbox.require '../../lib/router',
       requires:
         './requesthandler': RequestHandler
     router = new Router()
 
-  it "GET / is routed to root", -> 
-    router.route get 'http://localhost/' 
-    # requesthandler.root responds with 400 actually (plus additional info in response body
+  it "GET / is routed to root", ->
+    router.route get 'http://localhost/'
+    # requesthandler.root responds with 400 actually (plus additional info in
+    # response body)
     expect(requesthandler.root).toHaveBeenCalled()
-  
-  it "POST / is routed to 503 Not Implemented", -> 
-    router.route post 'http://localhost/' 
+
+  it "POST / is routed to 503 Not Implemented", ->
+    router.route post 'http://localhost/'
     expect(requesthandler.notImplemented).toHaveBeenCalled()
-  
+
   it "GET /favicon.ico is routed to 404 Not Found", ->
-    router.route get 'http://localhost/favicon.ico' 
+    router.route get 'http://localhost/favicon.ico'
     expect(requesthandler.notFound).toHaveBeenCalled()
- 
+
   it "OPTIONS for any URL are routed to the options handler", ->
-    router.route options 'http://localhost/' 
+    router.route options 'http://localhost/'
     expect(requesthandler.options).toHaveBeenCalled()
-    router.route options 'http://localhost/collection' 
+    router.route options 'http://localhost/collection'
     expect(requesthandler.options).toHaveBeenCalled()
-    router.route options 'http://localhost/collection/key' 
+    router.route options 'http://localhost/collection/key'
     expect(requesthandler.options).toHaveBeenCalled()
- 
+
   it "GET /collection lists a collection", ->
-    router.route get 'http://localhost/collection' 
+    router.route get 'http://localhost/collection'
     expect(requesthandler.list).toHaveBeenCalled()
 
   it "POST /collection creates a new document", ->
@@ -60,7 +61,7 @@ describe "Request routing:", ->
     expect(requesthandler.removeCollection)
 
   it "GET /collection/key retrieves a document", ->
-    router.route get 'http://localhost/collection/key' 
+    router.route get 'http://localhost/collection/key'
     expect(requesthandler.retrieve).toHaveBeenCalled()
 
   it "PUT /collection/key updates a document", ->
@@ -68,12 +69,12 @@ describe "Request routing:", ->
     expect(requesthandler.update).toHaveBeenCalled()
 
   it "DELETE /collection/key removes a document", ->
-    router.route remove 'http://localhost/collection/key' 
+    router.route remove 'http://localhost/collection/key'
     expect(requesthandler.remove).toHaveBeenCalled()
 
 
   request = (url, method) ->
-    req = 
+    req =
       url: url
       method: method
 

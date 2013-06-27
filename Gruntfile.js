@@ -1,5 +1,6 @@
 'use strict';
 
+/* jshint -W106 */
 module.exports = function(grunt) {
 
   grunt.initConfig({
@@ -7,50 +8,51 @@ module.exports = function(grunt) {
     banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
       '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-      '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-      ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */  \n',
+      '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
+      '<%= pkg.author.name %>; Licensed ' +
+      '<%= _.pluck(pkg.licenses, "type").join(", ") %> */  \n',
+
     // Task configuration.
     jshint: {
-      files: ['**/*.js*', '.jshintrc', '!node_modules/**/*.js*'],
+      files: ['**/*.js', '.jshintrc', '!node_modules/**/*'],
       options: {
         jshintrc: '.jshintrc'
-      },
-      ignore_warning: {
-        options: {
-          '-W013': true,
-        }
       }
     },
-    /*
+    coffeelint: {
+      options: {
+        'arrow_spacing': { 'level': 'error' },
+        'line_endings': { 'level': 'error' }
+      },
+      specs: ['spec/**/*.coffee']
+    },
+    jasmine_node: {
+      extensions: 'coffee',
+      forceExit: true,
+      useCoffee: true,
+      jUnit: {
+        report: false,
+        savePath : './build/reports/jasmine/',
+        useDotNotation: true,
+        consolidate: true
+      }
+    },
+    // TODO Also run cucumber.js features? But then we need to make sure a
+    // storra process is running.
     watch: {
-      files: ['<%= jshint.files %>', '**    /*.jade'],
+      files: ['<%= jshint.files %>', '<%= coffeelint.specs %>'],
       tasks: ['default']
     },
-    */
-    /*
-    'mocha-hack': {
-      options: {
-        globals: ['should'],
-        timeout: 3000,
-        ignoreLeaks: false,
-        ui: 'bdd',
-        reporter: 'spec'
-      },
+  })
 
-      all: { src: 'test/**    /*.js' }
-    }
-    */
-  });
+  grunt.loadNpmTasks('grunt-contrib-jshint')
+  grunt.loadNpmTasks('grunt-coffeelint')
+  grunt.loadNpmTasks('grunt-jasmine-node')
+  grunt.loadNpmTasks('grunt-contrib-watch')
 
-  // These plugins provide necessary tasks.
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  // grunt.loadNpmTasks('grunt-contrib-watch');
-  // grunt.loadNpmTasks('grunt-mocha-hack');
-
-  // Default task.
-  // grunt.registerTask('default', ['jshint', 'mocha-hack']);
-  grunt.registerTask('default', ['jshint']);
+  grunt.registerTask('default', ['jshint', 'coffeelint', 'jasmine_node'])
 
   // Travis-CI task
-  grunt.registerTask('travis', ['default']);
+  grunt.registerTask('travis', ['default'])
 }
+/* jshint +W106 */
