@@ -4,20 +4,16 @@
 == Build ==
 
 * Only start unit tests in default, not integration tests (because they
-  require Mongo to be up).
-* start storra (but not when its already running) from grunt and execute
-  cucumber.js, then terminate storra again.
-
+  require Mongo to be up), start integration tests in full build.
+* don't start storra from grunt if it is already running
 
 == Storra Core Features ==
 
 = Basics =
-* Make all code adhere to style.txt
 * Add LICENSE. Which?
-
+* log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
 * Remove code duplication in backends. Especially the two in memory backends have some duplicated code, but mongo also.
 * Use a dependency injection container. wire.js seems to be nice.
-* log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
 * Remove inconsistency: When calling methods which take an optional parameter
 (for example error) and the caller does not want to pass a value for the
 parameter, it sometimes uses null, sometimes undefined and sometimes gives
@@ -32,6 +28,8 @@ different). Use the "pass explicit null style" everywhere.
 * Check out warehouse.js and RQL
 
 = Tests =
+* Some specs are slow. WTF?
+* Switch from Jasmine to mocha/sinon/chai
 * Performance tests
   - Performance testing with different backends, without network latency, without concurrent requests
   - Load/throughput tests with a huge number of concurrent requests - choose a backend, which supports this scenario well. Second step: Execute these tests with different backends.
@@ -41,7 +39,8 @@ different). Use the "pass explicit null style" everywhere.
 = HTTP communication =
 * Also return on every request (where appropriate) headers x-storra-collection
   and x-storra-key or something like that, so that client do not need to parse
-  the location header when they want to access the ids.
+  the location header when they want to access the ids. Extend specs and use
+  the ids in cucumber.
 * Streaming when returning a collection: Does the current implementation really send doc by doc to the client? Can other requests be responded to in between?
 * Streaming when returning a collection: Is it better to process multiple documents in one chunk?
 * Write Content-Length header with every request.
@@ -59,6 +58,7 @@ different). Use the "pass explicit null style" everywhere.
 
 = very far in the future =
 * Built-in multi-tenant-capabilities would be cool, maybe, or something like multiple virtual storra servers under one "physical" storra servers (each configured separately) - think shared storra hosting
+* Quota capabilites (think free accounts, cheap accounts, premium accounts)
 * Push capabilities (push stuff to mobile phones when certain data is changed/added)
 
 == Backends ==

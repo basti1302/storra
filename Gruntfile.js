@@ -37,22 +37,39 @@ module.exports = function(grunt) {
         consolidate: true
       }
     },
+    cucumberjs: {
+      files: 'features',
+      options: {
+        format: 'pretty'
+      }
+    },
     // TODO Also run cucumber.js features? But then we need to make sure a
     // storra process is running.
     watch: {
       files: ['<%= jshint.files %>', '<%= coffeelint.specs %>'],
-      tasks: ['default']
+      tasks: ['full']
     },
   })
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-coffeelint')
   grunt.loadNpmTasks('grunt-jasmine-node')
+  grunt.loadNpmTasks('grunt-cucumber')
   grunt.loadNpmTasks('grunt-contrib-watch')
 
+  grunt.registerTask('start-storra', 'Start the storra server process.',
+      function() {
+    grunt.log.writeln('Starting storra server from grunt.')
+    var StorraServer = require('./lib/server')
+    var server = new StorraServer()
+    server.start()
+  })
+
   grunt.registerTask('default', ['jshint', 'coffeelint', 'jasmine_node'])
+  grunt.registerTask('full', ['default', 'start-storra', 'cucumberjs'])
 
   // Travis-CI task
-  grunt.registerTask('travis', ['default'])
+  // grunt.registerTask('travis', ['default'])
+
 }
 /* jshint +W106 */
