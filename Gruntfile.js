@@ -12,7 +12,6 @@ module.exports = function(grunt) {
       '<%= pkg.author.name %>; Licensed ' +
       '<%= _.pluck(pkg.licenses, "type").join(", ") %> */  \n',
 
-    // Task configuration.
     jshint: {
       files: ['**/*.js', '.jshintrc', '!node_modules/**/*'],
       options: {
@@ -27,15 +26,23 @@ module.exports = function(grunt) {
       specs: ['spec/**/*.coffee']
     },
     jasmine_node: {
-      extensions: 'coffee',
-      forceExit: true,
-      useCoffee: true,
-      jUnit: {
-        report: false,
-        savePath : './build/reports/jasmine/',
-        useDotNotation: true,
-        consolidate: true
-      }
+      options: {
+        forceExit: true,
+        match: '.',
+        matchall: false,
+        extensions: 'coffee',
+        coffee: true,
+        specNameMatcher: 'spec',
+        jUnit: {
+          report: false,
+          savePath : './build/reports/jasmine/',
+          useDotNotation: true,
+          consolidate: true
+        }
+      },
+      all: ['spec/'],
+      unit: ['spec/unit/'],
+      integration: ['spec/integration/']
     },
     cucumberjs: {
       files: 'features',
@@ -78,9 +85,10 @@ module.exports = function(grunt) {
     })
   })
 
-  grunt.registerTask('default', ['jshint', 'coffeelint', 'jasmine_node'])
+  grunt.registerTask('default', ['jshint', 'coffeelint', 'jasmine_node:unit'])
+  grunt.registerTask('integration', ['default', 'jasmine_node:integration'])
   grunt.registerTask('acceptance', ['start-storra', 'cucumberjs'])
-  grunt.registerTask('full', ['default', 'acceptance'])
+  grunt.registerTask('full', ['integration', 'acceptance'])
 
   // Travis-CI task
   // grunt.registerTask('travis', ['default'])
