@@ -5,6 +5,9 @@
 
 * Only start unit tests in default, not integration tests (because they
   require Mongo to be up), start integration tests in full build.
+  ... grunt-jasmine-node seems to not easily support that, it's not a multi
+  task. Maybe we move to Mocha first - if the corresponding grunt task is
+  better. Or fix jasmine-node's grunt task implementation.
 * don't start storra from grunt if it is already running
 
 == Storra Core Features ==
