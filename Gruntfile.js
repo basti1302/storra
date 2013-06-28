@@ -59,14 +59,28 @@ module.exports = function(grunt) {
 
   grunt.registerTask('start-storra', 'Start the storra server process.',
       function() {
-    grunt.log.writeln('Starting storra server from grunt.')
-    var StorraServer = require('./lib/server')
-    var server = new StorraServer()
-    server.start()
+    var done = this.async()
+    require('./lib/ping').ping(null, function(error) {
+      if (error) {
+        grunt.log.writeln('It seems the storra server is currently not ' +
+            'running, will start a new instance to run acceptance tests.')
+        if (error.message !== 'connect ECONNREFUSED') {
+          grunt.log.writeln('(Message from ping was: ' + error.message + ')')
+        }
+        var StorraServer = require('./lib/server')
+        var server = new StorraServer()
+        server.start()
+        done()
+      } else {
+        grunt.log.writeln('Storra server is already running.')
+        done()
+      }
+    })
   })
 
   grunt.registerTask('default', ['jshint', 'coffeelint', 'jasmine_node'])
-  grunt.registerTask('full', ['default', 'start-storra', 'cucumberjs'])
+  grunt.registerTask('acceptance', ['start-storra', 'cucumberjs'])
+  grunt.registerTask('full', ['default', 'acceptance'])
 
   // Travis-CI task
   // grunt.registerTask('travis', ['default'])
