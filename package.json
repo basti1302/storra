@@ -24,7 +24,8 @@
     "js-yaml": "2.0.x",
     "mongodb": "1.2.x",
     "node-uuid": "1.4.x",
-    "nstore": "0.5.1"
+    "nstore": "0.5.1",
+    "winston": "~0.7.2"
   },
   "comment_devDependencies": {
     "comment": "Some stuff should be installed globally by doing npm install -g <package>@<version>. There is no way to do that via package.json. So it is just mentioned here as a reminder.",

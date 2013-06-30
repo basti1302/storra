@@ -1,0 +1,2 @@
+Winston needs this (otherwise empty) directory to be present to write its log
+files, it does not create the directory itself.

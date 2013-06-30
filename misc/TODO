@@ -5,8 +5,10 @@
 
 = Basics =
 * Add LICENSE. Which?
-* log asynchronously, use proper logging lib, don't pay for string concatenation if log level is not activated
-* Remove code duplication in backends. Especially the two in memory backends have some duplicated code, but mongo also.
+* logging: use string templates with winston (don't pay for string
+  concatenation if log level is not activated)
+* Remove code duplication in backends. Especially the two in memory backends
+  have some duplicated code, but mongo also.
 * Use a dependency injection container. wire.js seems to be nice.
 * Remove inconsistency: When calling methods which take an optional parameter
 (for example error) and the caller does not want to pass a value for the
