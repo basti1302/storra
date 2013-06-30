@@ -23,6 +23,10 @@ different). Use the "pass explicit null style" everywhere.
 
 = Tests =
 * Some specs are slow. WTF?
+  unit:
+    mongodb
+    requesthandling
+
 * Switch from Jasmine to mocha/sinon/chai
 * Performance tests
   - Performance testing with different backends, without network latency, without concurrent requests
