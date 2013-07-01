@@ -9,36 +9,36 @@ WARNING: OUTDATED
 var log = require('../log')
 
 exports.list = function list(collectionName, writeResponse) {
-  log.debug("listing " + collectionName)
+  log.debug('listing %s', collectionName)
   // writeResponse(err, results)
 }
 
 exports.removeCollection = function removeCollection(collectionName, writeResponse) {
-  log.debug("removing collection " + collectionName)
+  log.debug('removing collection %s', collectionName)
   // writeResponse(err)
 }
 
 exports.read = function read(collectionName, key, writeResponse) {
-  log.debug("reading item " + collectionName + "/" + key)
+  log.debug('reading item %s/%s', collectionName, key)
   // writeResponse(err, doc, key)
 }
 
 exports.create = function create(collectionName, doc, writeResponse) {
-  log.debug("creating item in " + collectionName)
+  log.debug('creating item in %s', collectionName)
   // writeResponse(err, oid)
 }
 
 exports.update = function update(collectionName, key, doc, writeResponse) {
-  log.debug("updating item " + collectionName + "/" + key)
+  log.debug('updating item %s/%s', collectionName, key)
   // writeResponse(err)
 }
 
 exports.remove = function remove(collectionName, key, writeResponse) {
-  log.debug("removing item " + collectionName + "/" + key)
+  log.debug('removing item %s/%s', collectionName, key)
   // writeResponse(err)
 }
 
 exports.closeConnection = function closeConnection(callback) {
-  log.debug("closing connection")
+  log.debug('closing connection')
   // callback(err)
 }

@@ -68,6 +68,10 @@ module.exports = function(grunt) {
       function() {
     var done = this.async()
     require('./lib/ping').ping(null, function(error) {
+      // Only start a local storra instance if none is running. Rationale:
+      // If an instance is running via supervisor while watching changed files,
+      // we do not need to (and can not due to port conflicts) start a second
+      // instance.
       if (error) {
         grunt.log.writeln('It seems the storra server is currently not ' +
             'running, will start a new instance to run acceptance tests.')

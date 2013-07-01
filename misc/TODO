@@ -5,8 +5,6 @@
 
 = Basics =
 * Add LICENSE. Which?
-* logging: use string templates with winston (don't pay for string
-  concatenation if log level is not activated)
 * Remove code duplication in backends. Especially the two in memory backends
   have some duplicated code, but mongo also.
 * Use a dependency injection container. wire.js seems to be nice.
