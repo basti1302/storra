@@ -78,9 +78,7 @@ module.exports = function(grunt) {
         if (error.message !== 'connect ECONNREFUSED') {
           grunt.log.writeln('(Message from ping was: ' + error.message + ')')
         }
-        var StorraServer = require('./lib/server')
-        var server = new StorraServer()
-        server.start()
+        require('./lib/bootstrap')
         done()
       } else {
         grunt.log.writeln('Storra server is already running.')
