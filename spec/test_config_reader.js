@@ -1,14 +1,11 @@
 'use strict';
 
 function TestConfigurationReader() {
-  this.createGlobalConfig = function() {
-    global.storraConfig = {
-      mergeDefaultsIntoCurrentConfiguration: function(defaults) {
-        for (var key in defaults) {
-          if (defaults.hasOwnProperty(key)) {
-            global.storraConfig[key] = defaults[key]
-          }
-        }
+  this.configuration = {}
+  this.mergeDefaultsIntoCurrentConfiguration = function(defaults) {
+    for (var key in defaults) {
+      if (defaults.hasOwnProperty(key)) {
+        this.configuration[key] = defaults[key]
       }
     }
   }

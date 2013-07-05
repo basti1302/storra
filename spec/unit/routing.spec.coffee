@@ -18,13 +18,11 @@ describe "Request routing:", ->
       'notImplemented'
       'notFound'
     ])
-    RequestHandler = () ->
-      requesthandler
 
-    Router = sandbox.require '../../lib/router',
-      requires:
-        './requesthandler': RequestHandler
+    Router = sandbox.require '../../lib/router'
     router = new Router()
+    router.requesthandler = requesthandler
+    router.initRoutes()
 
   it "GET / is routed to root", ->
     router.route get 'http://localhost/'

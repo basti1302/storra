@@ -33,6 +33,7 @@ describe "The nstore backend", ->
         'nstore': nstore
         'fs': fs
     backend = new NStoreConnector()
+    backend.init()
 
     writeDocument = jasmine.createSpy('writeDocument')
     writeEnd = jasmine.createSpy('writeEnd')
@@ -99,7 +100,7 @@ describe "The nstore backend", ->
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
     whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.remove, 1).thenCallIt(backend, 'error')
+    whenCallback(collection.remove, 1).thenCallIt(backend, null)
     expect(writeResponse).toHaveBeenCalled()
 
 

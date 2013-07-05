@@ -22,6 +22,10 @@ different). Use the "pass explicit null style" everywhere.
 * Check out warehouse.js and RQL
 
 = Tests =
+* Leverage dependency injection in unit specs, now that we use wire.js
+* With winston, some specs emit a event listener leak, I guess because the
+  winston stuff is registered for each single spec. Possible fix: Replace
+  winston logger in tests by some simple console.log wrapper.
 * Some specs are slow. WTF?
   unit:
     mongodb

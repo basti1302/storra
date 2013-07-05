@@ -18,7 +18,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
       'get'
       'set'
       'rm'
-      'on'
+      'once'
     ])
     dirty = jasmine.createSpyObj('dirty', [
       'Dirty'
@@ -35,6 +35,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
         'dirty': dirty
         'fs': fs
     backend = new NodeDirtyConnector()
+    backend.init()
 
     writeDocument = jasmine.createSpy('writeDocument')
     writeEnd = jasmine.createSpy('writeEnd')
@@ -42,7 +43,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
 
   it "lists a collection", ->
     backend.list('collection', writeDocument, writeEnd)
-    whenCallback(collection.on, 1).thenCallIt(backend)
+    whenCallback(collection.once, 1).thenCallIt(backend)
     whenCallback(collection.forEach, 0).thenCallIt(backend, 'key', {a: "b"})
     expect(writeDocument).toHaveBeenCalledWith({a: "b", _id: 'key'})
     expect(writeEnd).toHaveBeenCalledWith(null)
@@ -65,7 +66,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   it "reads a document", ->
     collection.get.andReturn({a: "b"})
     backend.read('collection', 'key', writeResponse)
-    whenCallback(collection.on, 1).thenCallIt(backend)
+    whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.get).toHaveBeenCalledWith('key')
     expect(writeResponse).toHaveBeenCalledWith(undefined, {a: "b", _id: 'key'},
         'key')
@@ -73,7 +74,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   it "says 404 when reading an non-existing document", ->
     collection.get.andReturn(null)
     backend.read('collection', 'key', writeResponse)
-    whenCallback(collection.on, 1).thenCallIt(backend)
+    whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.get).toHaveBeenCalledWith('key')
     expect(writeResponse).toHaveBeenCalledWith(jasmine.any(Object), null, 'key')
     expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
@@ -86,14 +87,14 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   it "updates a document", ->
     collection.get.andReturn({a: "b"})
     backend.update('collection', 'key', 'document', writeResponse)
-    whenCallback(collection.on, 1).thenCallIt(backend)
+    whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.set).toHaveBeenCalledWith('key', 'document')
     expect(writeResponse).toHaveBeenCalledWith(undefined)
 
   it "throws 404 error when updating a non-existing document", ->
     collection.get.andReturn(undefined)
     backend.update('collection', 'key', 'document', writeResponse)
-    whenCallback(collection.on, 1).thenCallIt(backend)
+    whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.set).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalled()
     expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)

@@ -9,10 +9,9 @@ describe "The request handler", ->
   err404.httpStatus = 404
 
   beforeEach ->
-    global.storraConfig = {core: {backend: './backend'}}
-
     sandbox = require 'sandboxed-module'
     backend = jasmine.createSpyObj('backend', [
+      'init'
       'list'
       'removeCollection'
       'read'
@@ -22,6 +21,8 @@ describe "The request handler", ->
     ])
     request = jasmine.createSpyObj('request', [
       'on'
+      'once'
+      'removeAllListeners'
     ])
     request.headers = {host: 'localhost'}
     request.url = "http://localhost:8888"
@@ -36,6 +37,11 @@ describe "The request handler", ->
         './backend': () ->
           backend
     requesthandler = new RequestHandler()
+    testConfigReader = new (require('../test_config_reader'))()
+    testConfigReader.mergeDefaultsIntoCurrentConfiguration(
+        {core: {backend: './backend'}})
+    requesthandler.configReader = testConfigReader
+    requesthandler.createBackend()
 
   it "responds to root with 400 Bad Request", ->
     requesthandler.root(request, response)
@@ -59,7 +65,7 @@ describe "The request handler", ->
 
   it "says 500 if listing the collection fails", ->
     requesthandler.list(request, response, 'collection')
-    whenCallback(backend.list, 2).thenCallIt(requesthandler, 'error')
+    whenCallback(backend.list, 2).thenCallIt(requesthandler, new Error('error'))
     expect500()
 
   it "removes a collection", ->
@@ -76,7 +82,7 @@ describe "The request handler", ->
     expect(backend.removeCollection).toHaveBeenCalledWith 'collection',
         jasmine.any(Function)
     whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler,
-        'error')
+        new Error('error'))
     expect500()
 
   it "serves a document", ->
@@ -94,7 +100,7 @@ describe "The request handler", ->
 
   it "says 500 if serving a document fails for unknown reasons", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(backend.read, 2).thenCallIt(requesthandler, 'error', {}, 'key')
+    whenCallback(backend.read, 2).thenCallIt(requesthandler, new Error('error'), {}, 'key')
     expect500()
 
   it "creates a document", ->
@@ -121,7 +127,7 @@ describe "The request handler", ->
   it "says 500 if creating a document fails", ->
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
-    whenCallback(backend.create, 2).thenCallIt(requesthandler, 'error', 'key')
+    whenCallback(backend.create, 2).thenCallIt(requesthandler, new Error('error'), 'key')
     expect500()
 
   it "updates a document", ->
@@ -141,7 +147,7 @@ describe "The request handler", ->
   it "says 500 if updating a document fails", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    whenCallback(backend.update, 3).thenCallIt(requesthandler, 'error')
+    whenCallback(backend.update, 3).thenCallIt(requesthandler, new Error('error'))
     expect500()
 
   it "deletes a document", ->
@@ -152,7 +158,7 @@ describe "The request handler", ->
 
   it "says 500 if deleting  a document fails", ->
     requesthandler.remove(request, response, 'collection', 'key')
-    whenCallback(backend.remove, 2).thenCallIt(requesthandler, 'error')
+    whenCallback(backend.remove, 2).thenCallIt(requesthandler, new Error('error'))
     expect500()
 
   it "handles bad requests", ->
@@ -210,7 +216,7 @@ describe "The request handler", ->
 
   stubCreateUpdate = () ->
     requestReaderOnData = request.on.calls[0].args[1]
-    requestReaderOnEnd = request.on.calls[1].args[1]
+    requestReaderOnEnd = request.once.calls[0].args[1]
     requestReaderOnData.call(requesthandler, '{"foo":"bar"}')
     requestReaderOnEnd.call(requesthandler)
 
