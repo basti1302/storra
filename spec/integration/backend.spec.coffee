@@ -11,8 +11,6 @@ describe "Common backend integration test:", ->
 
   logIntermediateResults = true
 
-  (new (require('../test_config_reader'))()).createGlobalConfig()
-
   # define parameterized test
   parameterized = (backend_module, backend_name) ->
     describe "The #{backend_name} backend (without mocked dependencies)", ->
@@ -32,6 +30,9 @@ describe "Common backend integration test:", ->
         errors = []
         Connector = require backend_module
         backend = new Connector()
+        TestConfigReader = require('../test_config_reader')
+        configReader = new TestConfigReader()
+        backend.init(configReader)
         collection = uuid.v1()
 
         backend.checkAvailable(
