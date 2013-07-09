@@ -8,6 +8,7 @@
 * Remove code duplication in backends. Especially the two in memory backends
   have some duplicated code, but mongo also.
 * Use a dependency injection container. wire.js seems to be nice.
+* Also create backend via wire.js
 * Remove inconsistency: When calling methods which take an optional parameter
 (for example error) and the caller does not want to pass a value for the
 parameter, it sometimes uses null, sometimes undefined and sometimes gives

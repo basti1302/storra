@@ -3,8 +3,10 @@ describe "Integration from routing to backend test: storra", ->
   log = require('../../lib/log')
   Step = require('step')
   uuid = require('node-uuid')
+  wire = require('wire')
 
   baseUrl = 'http://localhost:1302'
+  test_wire_spec = require('./test_wire_spec')
 
   collectionName = null
   collectionUrl = null
@@ -18,9 +20,19 @@ describe "Integration from routing to backend test: storra", ->
   beforeEach ->
     # TODO parameterize this test like backend_integration spec with all
     # possible backends
-    global.storraConfig = {core: {backend: './backends/node_dirty_backend'}}
-    Router = require '../../lib/router'
-    router = new Router()
+
+    # TODO remove dupliction between production wire spec and test spec
+
+    # When wiring has finished, we fetch the router from the wire.js context
+    afterWiring = (context) ->
+      router = context.router
+    # Wire up the test wire.js context
+    runs ->
+      wire(test_wire_spec, { require: require }).then(afterWiring, console.error)
+    # wait for wiring to be finished
+    waitsFor ->
+      router
+    , "wire context to have been initialized", 500
 
     collectionName = uuid.v1()
     collectionUrl = "/#{collectionName}"
@@ -44,6 +56,7 @@ describe "Integration from routing to backend test: storra", ->
       expect(cleanupResponse.status).toEqual(204)
 
   it "responds to OPTIONS / with 200", ->
+    expect(true).toBe(true)
     forOptions '/', (response) ->
       expectOptionsResponse response
 
@@ -288,6 +301,11 @@ describe "Integration from routing to backend test: storra", ->
 
     on: (event, callback) ->
       @listener[event] = callback
+    once: (event, callback) ->
+      @listener[event] = callback
+    removeAllListeners: () ->
+      @listeners = []
+
 
   class MockResponse
     constructor: () ->
@@ -308,4 +326,3 @@ describe "Integration from routing to backend test: storra", ->
 
   dumpResponse = (response) ->
     log.error(JSON.stringify(response))
-
