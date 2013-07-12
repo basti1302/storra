@@ -20,12 +20,6 @@ describe "The request handler", ->
       'update'
       'remove'
     ])
-
-    ###
-    testConfigReader = new (require('../test_config_reader'))()
-    testConfigReader.mergeDefaultsIntoCurrentConfiguration(
-        {core: {backend: './backend'}})
-    ###
     requesthandler.backend = backend
 
     request = jasmine.createSpyObj('request', [
@@ -98,7 +92,8 @@ describe "The request handler", ->
 
   it "says 500 if serving a document fails for unknown reasons", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
-    whenCallback(backend.read, 2).thenCallIt(requesthandler, new Error('error'), {}, 'key')
+    whenCallback(backend.read, 2).thenCallIt(
+      requesthandler, new Error('error'), {}, 'key')
     expect500()
 
   it "creates a document", ->
@@ -125,7 +120,8 @@ describe "The request handler", ->
   it "says 500 if creating a document fails", ->
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
-    whenCallback(backend.create, 2).thenCallIt(requesthandler, new Error('error'), 'key')
+    whenCallback(backend.create, 2).thenCallIt(
+      requesthandler, new Error('error'), 'key')
     expect500()
 
   it "updates a document", ->
@@ -145,7 +141,8 @@ describe "The request handler", ->
   it "says 500 if updating a document fails", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
-    whenCallback(backend.update, 3).thenCallIt(requesthandler, new Error('error'))
+    whenCallback(backend.update, 3).thenCallIt(
+      requesthandler, new Error('error'))
     expect500()
 
   it "deletes a document", ->
@@ -156,7 +153,8 @@ describe "The request handler", ->
 
   it "says 500 if deleting  a document fails", ->
     requesthandler.remove(request, response, 'collection', 'key')
-    whenCallback(backend.remove, 2).thenCallIt(requesthandler, new Error('error'))
+    whenCallback(backend.remove, 2).thenCallIt(
+      requesthandler, new Error('error'))
     expect500()
 
   it "handles bad requests", ->

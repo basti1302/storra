@@ -28,7 +28,8 @@ describe "Integration from routing to backend test: storra", ->
       router = context.router
     # Wire up the test wire.js context
     runs ->
-      wire(test_wire_spec, { require: require }).then(afterWiring, console.error)
+      wire(test_wire_spec,
+          { require: require }).then(afterWiring, console.error)
     # wait for wiring to be finished (by looking if router has been set by
     # afterWiring
     waitsFor ->
