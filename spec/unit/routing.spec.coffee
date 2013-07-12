@@ -1,11 +1,9 @@
 describe "Request routing:", ->
 
-  sandbox = null
   requesthandler = null
   router = null
 
   beforeEach ->
-    sandbox = require 'sandboxed-module'
     requesthandler = jasmine.createSpyObj('requesthandler', [
       'root'
       'options'
@@ -19,7 +17,7 @@ describe "Request routing:", ->
       'notFound'
     ])
 
-    Router = sandbox.require '../../lib/router'
+    Router = require '../../lib/router'
     router = new Router()
     router.requesthandler = requesthandler
     router.initRoutes()
