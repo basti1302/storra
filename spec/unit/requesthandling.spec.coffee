@@ -1,6 +1,5 @@
 describe "The request handler", ->
 
-  sandbox = null
   backend = null
   requesthandler = null
   request = null
@@ -9,7 +8,9 @@ describe "The request handler", ->
   err404.httpStatus = 404
 
   beforeEach ->
-    sandbox = require 'sandboxed-module'
+    RequestHandler = require('../../lib/requesthandler')
+    requesthandler = new RequestHandler()
+
     backend = jasmine.createSpyObj('backend', [
       'init'
       'list'
@@ -19,6 +20,14 @@ describe "The request handler", ->
       'update'
       'remove'
     ])
+
+    ###
+    testConfigReader = new (require('../test_config_reader'))()
+    testConfigReader.mergeDefaultsIntoCurrentConfiguration(
+        {core: {backend: './backend'}})
+    ###
+    requesthandler.backend = backend
+
     request = jasmine.createSpyObj('request', [
       'on'
       'once'
@@ -31,17 +40,6 @@ describe "The request handler", ->
       'write'
       'end'
     ])
-
-    RequestHandler = sandbox.require '../../lib/requesthandler',
-      requires:
-        './backend': () ->
-          backend
-    requesthandler = new RequestHandler()
-    testConfigReader = new (require('../test_config_reader'))()
-    testConfigReader.mergeDefaultsIntoCurrentConfiguration(
-        {core: {backend: './backend'}})
-    requesthandler.configReader = testConfigReader
-    requesthandler.createBackend()
 
   it "responds to root with 400 Bad Request", ->
     requesthandler.root(request, response)
