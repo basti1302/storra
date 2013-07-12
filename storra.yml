@@ -5,7 +5,6 @@ core:
   #port: 1302
   #bindAddress: "0.0.0.0"
   #backend: "./backends/node_dirty_backend"
-  backend: "./backends/mongodb_backend"
 
 #mongodb:
   #connectionMaxRetries: 20
