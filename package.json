@@ -42,7 +42,7 @@
     "grunt-jasmine-node": "git://github.com/magicmoose/grunt-jasmine-node.git",
     "grunt-cucumber": "~0.2.1",
     "grunt-contrib-watch": "~0.4.4",
-    "request": "2.21.x",
+    "request": "~2.21",
     "sandboxed-module": "0.2.x",
     "step": ">=0.0.5"
   },
