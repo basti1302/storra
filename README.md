@@ -25,7 +25,7 @@ If you want to *develop* Storra:
 
 ### Note for Windows Users
 
-If you get the following or something similar error during `npm install`:
+If you get the following error or something similar during `npm install`:
 
 ```
 npm WARN `git config --get remote.origin.url` returned wrong result (git://github.com/magicmoose/grunt-jasmine-node.git)
