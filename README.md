@@ -8,12 +8,12 @@ Right now, this package basically wraps MongoDB (or one of the in-memory databas
 Setup
 -----
 
-* Storra runs on Node.js, so obviously you need to have Node.js installed.
-Anything from version 0.8.21 upwards should do. Go to http://nodejs.org/ to
-fetch it or follow https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager
+* Storra runs on Node.js, so obviously you need to have Node.js installed. Anything from version 0.8.21 upwards should do. Go to http://nodejs.org/ and click on the green button that says "Install", or follow https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager
 * `git clone https://github.com/basti1302/storra.git`
+
 If you just want to *use* Storra:
     * `npm install`
+
 If you want to *develop* Storra:
     * `npm install -g jasmine-node 1.2.x`
     * `npm install -g cucumber.js ~0.3.0`
@@ -27,7 +27,7 @@ If you want to *develop* Storra:
 
 If you get the following error or something similar during `npm install`:
 
-```
+```shell
 npm WARN `git config --get remote.origin.url` returned wrong result (git://github.com/magicmoose/grunt-jasmine-node.git)
 
 npm ERR! git clone git://github.com/magicmoose/grunt-jasmine-node.git
@@ -50,22 +50,17 @@ npm ERR! code ENOENT
 npm ERR! errno ENOENT
 ```
 
-It might be due to this problem: https://github.com/isaacs/npm/issues/2333 -
-or you might have chosen to not add git to your PATH during the installation of
-git. The solution is to update to the latest version of Git for Windows or to do
-`npm install` from within the GitBash instead of using the command prompt.
+It might be due to this problem: https://github.com/isaacs/npm/issues/2333 - or you might have chosen to not add git to your PATH during the installation of git. The solution is to update to the latest version of Git for Windows or to do `npm install` from within the GitBash instead of using the command prompt.
 
 Configuration
 -------------
 
-Since the configuration file format YAML and YAML is hierarchic, configuration
-is split in sections. Currently there are the following sections:
+Since the configuration file format YAML and YAML is hierarchic, configuration is split in sections. Currently there are the following sections:
 
 * core
 * mongodb
 
-No section needs to be present. None of the possible options needs to be
-present. Unknown sections are ignored as well as unknown values.
+No section needs to be present. None of the possible options needs to be present. Unknown sections are ignored as well as unknown values.
 
 ### Section core
 
@@ -77,12 +72,9 @@ present. Unknown sections are ignored as well as unknown values.
     * `'./backends/mongodb_backend'` - MongoDB
 
 ### Section mongodb
-If you use the MongoDB backend, you can configure some more options specific to
-MongoDB. If you use a different backend, these options are ignored.
-* connectionMaxRetries - How often Storra tries to connect to MongoDB if the
-  connection can not be established on the first try. Default is 20.
-* connectionTimeBetweenRetries - How many milliseconds to wait before trying
-  again. Default is 50.
+If you use the MongoDB backend, you can configure some more options specific to MongoDB. If you use a different backend, these options are ignored.
+* connectionMaxRetries - How often Storra tries to connect to MongoDB if the connection can not be established on the first try. Default is 20.
+* connectionTimeBetweenRetries - How many milliseconds to wait before trying again. Default is 50.
 * database - The MongoDB database Storra will use.
 
 Usage
@@ -94,5 +86,4 @@ Usage
 * PUT /collection/key to update a document
 * DELETE /collection/key to delete a document
 
-Currently, non-existing collections are created on the fly when you access them
-(either by GET or by POST) instead of returning HTTP 404 Not Found. This is why there is no method to explicitly create a collection. This is simply a consequence of the fact that all existing backends handle access to non-existing collections this way. This behaviour will probably change in a future version (it seems quite questionable that a GET should create something) or it might be configurable.
+Currently, non-existing collections are created on the fly when you access them (either by GET or by POST) instead of returning HTTP 404 Not Found. This is why there is no method to explicitly create a collection. This is simply a consequence of the fact that all existing backends handle access to non-existing collections this way. This behaviour will probably change in a future version (it seems quite questionable that a GET should create something) or it might be configurable.
