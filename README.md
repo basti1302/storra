@@ -10,11 +10,9 @@ Setup
 
 * Storra runs on Node.js, so obviously you need to have Node.js installed. Anything from version 0.8.21 upwards should do. Go to http://nodejs.org/ and click on the green button that says "Install", or follow https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager
 * `git clone https://github.com/basti1302/storra.git`
-
-If you just want to *use* Storra:
+* If you just want to *use* Storra:
     * `npm install`
-
-If you want to *develop* Storra:
+* If you want to *develop* Storra:
     * `npm install -g jasmine-node 1.2.x`
     * `npm install -g cucumber.js ~0.3.0`
     * `npm install -g grunt-cli 0.4.1`
