@@ -71,7 +71,7 @@ present. Unknown sections are ignored as well as unknown values.
 
 * port - the port on which Storra listens for connections. Default is 1302.
 * bindAddress - The IP address on which Storra listens for connections. Default is 0.0.0.0.
-* backend - the persistence backend to use.
+* backend - the persistence backend to use. Possible values:
     * `'./backends/node_dirty_backend'` - node-dirty (Default)
     * `'./backends/nstore_backend'` - nStore
     * `'./backends/mongodb_backend'` - MongoDB
@@ -95,4 +95,4 @@ Usage
 * DELETE /collection/key to delete a document
 
 Currently, non-existing collections are created on the fly when you access them
-(either by GET or by POST) instead of returning HTTP 404 Not Found. This is why there is no method to explicitly create a collection. This is simply a consequence of the fact that all existing backends handle access to non-existing collections this way. This behaviour will probably change in a future version or it might be configurable.
+(either by GET or by POST) instead of returning HTTP 404 Not Found. This is why there is no method to explicitly create a collection. This is simply a consequence of the fact that all existing backends handle access to non-existing collections this way. This behaviour will probably change in a future version (it seems quite questionable that a GET should create something) or it might be configurable.
