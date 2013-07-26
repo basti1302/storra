@@ -1,5 +1,6 @@
 Storra
 ======
+[![Build Status](https://travis-ci.org/basti1302/storra.png)](https://travis-ci.org/basti1302/storra)
 
 A prototypical REST storage service based on [Node.js] (http://nodejs.org/). Currently, only [MongoDB](http://www.mongodb.org/) and two in-memory databases, [node-dirty](https://github.com/felixge/node-dirty) and [nStore](https://github.com/creationix/nstore), can be used as the storage backend. Other storage backends might be added in future versions.
 

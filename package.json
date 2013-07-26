@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "test": "jasmine-node --coffee spec"
+    "test": "grunt full"
   },
   "keywords": [
     "persistence",
@@ -31,7 +31,7 @@
   "comment_devDependencies": {
     "comment": "Some stuff should be installed globally by doing npm install -g <package>@<version>. There is no way to do that via package.json. So it is just mentioned here as a reminder.",
     "jasmine-node": "1.2.x",
-    "cucumber.js": "~0.3.0",
+    "cucumber": "~0.3.0",
     "grunt-cli": "~0.4.1",
     "supervisor": "Using supervisor during development is also highly recommended."
   },
