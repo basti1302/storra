@@ -10,5 +10,5 @@ services:
 
 before_script:
   - npm install -g jasmine-node@1.2.x
-  - npm install -g cucumber.js@~0.3.0
+  - npm install -g cucumber@~0.3.0
   - npm install -g grunt-cli@~0.4.1
