@@ -6,7 +6,7 @@ core:
   #bindAddress: "0.0.0.0"
   #backend: "./backends/node_dirty_backend"
 
-#mongodb:
+mongodb:
   #connectionMaxRetries: 20
   #connectionTimeBetweenRetries: 50
   #database: "storra"
