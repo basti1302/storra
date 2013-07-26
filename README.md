@@ -13,9 +13,9 @@ Setup
 * If you just want to *use* Storra:
     * `npm install`
 * If you want to *develop* Storra:
-    * `npm install -g jasmine-node 1.2.x`
-    * `npm install -g cucumber.js ~0.3.0`
-    * `npm install -g grunt-cli 0.4.1`
+    * `npm install -g jasmine-node@1.2.x`
+    * `npm install -g cucumber@~0.3.0`
+    * `npm install -g grunt-cli@~0.4.1`
     * Optional, but recommended: `npm install -g supervisor`
     * `npm install`
 * You can edit `storra.yml` to configure Storra, see below.
