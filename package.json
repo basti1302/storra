@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "author": "Bastian Krol",
   "description": "a generic stand-alone data store with a RESTful interface which can be configured to use different storage engines (MongoDB, nStore, node-dirty, ...), all encapsulated behind the same REST API",
+  "repository": "https://github.com/basti1302/storra.git",
   "contributors": [],
   "preferGlobal": "true",
   "bin": {

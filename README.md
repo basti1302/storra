@@ -4,7 +4,7 @@ Storra
 
 A prototypical REST storage service based on [Node.js] (http://nodejs.org/). Currently, only [MongoDB](http://www.mongodb.org/) and two in-memory databases, [node-dirty](https://github.com/felixge/node-dirty) and [nStore](https://github.com/creationix/nstore), can be used as the storage backend. Other storage backends might be added in future versions.
 
-Right now, this package basically wraps MongoDB (or one of the in-memory databases) (or one of the in-memory databases) (or one of the in-memory databases) (or one of the in-memory databases) (or one of the in-memory databases) (or one of the in-memory databases) (or one of the in-memory databases) (or one of the in-memory databases) in a RESTful http interface. Only basic CRUD operations on collections and single documents are supported, queries are not yet implemented.
+Right now, this package basically wraps MongoDB (or one of the in-memory databases) in a RESTful http interface. Only basic CRUD operations on collections and single documents are supported, queries are not yet implemented.
 
 Setup
 -----
@@ -14,9 +14,9 @@ Setup
 * If you just want to *use* Storra:
     * `npm install`
 * If you want to *develop* Storra:
-    * `npm install -g jasmine-node@1.2.x`
+    * `npm install -g jasmine-node@~1.2.3`
     * `npm install -g cucumber@~0.3.0`
-    * `npm install -g grunt-cli@~0.4.1`
+    * `npm install -g grunt-cli
     * Optional, but recommended: `npm install -g supervisor`
     * `npm install`
 * You can edit `storra.yml` to configure Storra, see below.
