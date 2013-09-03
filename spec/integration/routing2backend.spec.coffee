@@ -150,7 +150,7 @@ describe "Integration from routing to backend test: storra", ->
       new MockRequest('POST', collectionUrl, '{"a": "b"}', null, (response) ->
         location = response.headers['location']
       )
-      new MockRequest('GET', 'will be set by after handler', null, (request) ->
+      new MockRequest('GET', 'will be set by before handler', null, (request) ->
         request.url = location
       , null)
     ], (response) ->
@@ -249,10 +249,11 @@ describe "Integration from routing to backend test: storra", ->
       if (requests[i].body)
         requests[i].listener['data'](requests[i].body)
         requests[i].listener['end']()
-      if requests[i].after
-        requests[i].after(responses[i])
     waitsFor ->
-      return responses[i] && responses[i].ended
+      ended = responses[i].ended
+      if ended && requests[i].after
+        requests[i].after(responses[i])
+      return responses[i].ended
     , "request to have returned", 200
 
   forOptions = (path, responseCheck) ->

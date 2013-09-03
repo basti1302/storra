@@ -81,6 +81,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
 
   it "creates a document", ->
     backend.create('collection', 'document', writeResponse)
+    whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.set).toHaveBeenCalledWith(jasmine.any(String), 'document')
     expect(writeResponse).toHaveBeenCalledWith(undefined, jasmine.any(String))
 
@@ -101,6 +102,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
+    whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.rm).toHaveBeenCalledWith('key')
     expect(writeResponse).toHaveBeenCalled()
 

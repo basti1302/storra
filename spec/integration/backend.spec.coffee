@@ -183,7 +183,7 @@ describe "Common backend integration test:", ->
                 log.info("list -> error, list: #{error},
                     #{JSON.stringify(listing)}")
               errors.push error
-              # one extra step (which do not really belong into this spec):
+              # one extra step (which does not really belong into this spec):
               # use key from listing to read single document
               key_from_listing = listing[0]._id.toString()
               backend.read(collection, key_from_listing, this)
