@@ -139,7 +139,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
 
   it "passes up all errors that are not 'ns not found' in removeCollection", ->
     backend.removeCollection('collection', writeResponse)
-    err = new Error('something weird happend')
+    err = new Error('test error - something weird happend')
     whenCallback(db.dropCollection, 1).thenCallIt(backend, err, 0)
     expect(writeResponse).toHaveBeenCalledWith(err)
 

@@ -57,7 +57,8 @@ describe "The request handler", ->
 
   it "says 500 if listing the collection fails", ->
     requesthandler.list(request, response, 'collection')
-    whenCallback(backend.list, 2).thenCallIt(requesthandler, new Error('error'))
+    whenCallback(backend.list, 2).thenCallIt(requesthandler,
+        new Error('test error'))
     expect500()
 
   it "removes a collection", ->
@@ -74,7 +75,7 @@ describe "The request handler", ->
     expect(backend.removeCollection).toHaveBeenCalledWith 'collection',
         jasmine.any(Function)
     whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler,
-        new Error('error'))
+        new Error('test error'))
     expect500()
 
   it "serves a document", ->
@@ -93,7 +94,7 @@ describe "The request handler", ->
   it "says 500 if serving a document fails for unknown reasons", ->
     requesthandler.retrieve(request, response, 'collection', 'key')
     whenCallback(backend.read, 2).thenCallIt(
-      requesthandler, new Error('error'), {}, 'key')
+      requesthandler, new Error('test error'), {}, 'key')
     expect500()
 
   it "creates a document", ->
@@ -121,7 +122,7 @@ describe "The request handler", ->
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
     whenCallback(backend.create, 2).thenCallIt(
-      requesthandler, new Error('error'), 'key')
+      requesthandler, new Error('test error'), 'key')
     expect500()
 
   it "updates a document", ->
@@ -142,7 +143,7 @@ describe "The request handler", ->
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
     whenCallback(backend.update, 3).thenCallIt(
-      requesthandler, new Error('error'))
+      requesthandler, new Error('test error'))
     expect500()
 
   it "deletes a document", ->
@@ -154,7 +155,7 @@ describe "The request handler", ->
   it "says 500 if deleting  a document fails", ->
     requesthandler.remove(request, response, 'collection', 'key')
     whenCallback(backend.remove, 2).thenCallIt(
-      requesthandler, new Error('error'))
+      requesthandler, new Error('test error'))
     expect500()
 
   it "handles bad requests", ->
