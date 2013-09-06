@@ -2,7 +2,6 @@
 # other dependency.
 describe "The node-dirty backend (with mocked dependencies)", ->
 
-  sandbox = null
   fs = null
   dirty = null
   backend = null
@@ -12,7 +11,6 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   writeResponse = null
 
   beforeEach ->
-    sandbox = require 'sandboxed-module'
     collection = jasmine.createSpyObj('collection', [
       'forEach'
       'get'
@@ -29,13 +27,14 @@ describe "The node-dirty backend (with mocked dependencies)", ->
       'exists'
       'unlink'
     ])
-    NodeDirtyConnector =
-      sandbox.require '../../lib/backends/node_dirty_backend',
-      requires:
-        'dirty': dirty
-        'fs': fs
+    NodeDirtyConnector = require '../../lib/backends/node_dirty_backend'
     backend = new NodeDirtyConnector()
+    backend.dirty = dirty
+    backend.fs = fs
+    backend.os = require('os')
     backend.init()
+    # disable collection caching to ensure test isolation
+    spyOn(backend.cache, 'get').andReturn(null)
 
     writeDocument = jasmine.createSpy('writeDocument')
     writeEnd = jasmine.createSpy('writeEnd')

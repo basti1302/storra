@@ -1,8 +1,7 @@
-describe "The nstore backend", ->
+describe "The nStore backend", ->
 
-  sandbox = null
   fs = null
-  nstore = null
+  nStore = null
   backend = null
   collection = null
   writeDocument = null
@@ -10,30 +9,31 @@ describe "The nstore backend", ->
   writeResponse = null
 
   beforeEach ->
-    sandbox = require 'sandboxed-module'
     collection = jasmine.createSpyObj('collection', [
       'all'
       'get'
       'save'
       'remove'
     ])
-    nstore = jasmine.createSpyObj('nstore', [
+    nStore = jasmine.createSpyObj('nstore', [
       'new'
     ])
-    nstore.new.andReturn(collection)
-    nstore.extend = () ->
-      return nstore
+    nStore.new.andReturn(collection)
+    nStore.extend = () ->
+      return nStore
 
     fs = jasmine.createSpyObj('fs', [
       'exists'
       'unlink'
     ])
-    NStoreConnector = sandbox.require '../../lib/backends/nstore_backend',
-      requires:
-        'nstore': nstore
-        'fs': fs
+    NStoreConnector = require '../../lib/backends/nstore_backend'
     backend = new NStoreConnector()
+    backend.nStore = nStore
+    backend.fs = fs
+    backend.os = require('os')
     backend.init()
+    # disable collection caching to ensure test isolation
+    spyOn(backend.cache, 'get').andReturn(null)
 
     writeDocument = jasmine.createSpy('writeDocument')
     writeEnd = jasmine.createSpy('writeEnd')
@@ -41,7 +41,7 @@ describe "The nstore backend", ->
 
   it "lists a collection", ->
     backend.list('collection', writeDocument, writeEnd)
-    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.all, 0).thenCallIt(backend, undefined,
         {key1: {a: "b"}, key2: {c: "d"}})
     expect(writeDocument).toHaveBeenCalledWith({a: "b", _id: "key1"})
@@ -50,7 +50,7 @@ describe "The nstore backend", ->
 
   it "passes on errors when listing a collection fails", ->
     backend.list('collection', writeDocument, writeEnd)
-    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.all, 0).thenCallIt(backend, 'error', 'whatever')
     expect(writeDocument).not.toHaveBeenCalled()
     expect(writeEnd).toHaveBeenCalledWith('error')
@@ -70,20 +70,20 @@ describe "The nstore backend", ->
 
   it "reads a document", ->
     backend.read('collection', 'key', writeResponse)
-    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, 'error', 'document',
         'key')
     expect(writeResponse).toHaveBeenCalledWith('error', 'document', 'key')
 
   it "creates a document", ->
     backend.create('collection', 'document', writeResponse)
-    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.save, 2).thenCallIt(backend, 'error', 'key')
     expect(writeResponse).toHaveBeenCalledWith('error', 'key')
 
   it "updates a document", ->
     backend.update('collection', 'key', 'document', writeResponse)
-    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, undefined)
     expect(collection.save).toHaveBeenCalled()
     whenCallback(collection.save, 2).thenCallIt(backend, 'error')
@@ -91,7 +91,7 @@ describe "The nstore backend", ->
 
   it "throws 404 error when updating a non-existing document", ->
     backend.update('collection', 'key', 'document', writeResponse)
-    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, 'error')
     expect(collection.save).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalled()
@@ -99,7 +99,7 @@ describe "The nstore backend", ->
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
-    whenCallback(nstore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.remove, 1).thenCallIt(backend, null)
     expect(writeResponse).toHaveBeenCalled()
 

@@ -2,7 +2,6 @@
 # and any other dependency.
 describe "The MongoDB backend (with mocked dependencies)", ->
 
-  sandbox = null
   mongodb = null
   mongoClient = null
   server = null
@@ -15,8 +14,6 @@ describe "The MongoDB backend (with mocked dependencies)", ->
   writeResponse = null
 
   beforeEach ->
-    sandbox = require 'sandboxed-module'
-
     cursor = jasmine.createSpyObj('cursor', [
       'each'
     ])
@@ -56,10 +53,9 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     mongodb.Server.andReturn(server)
     mongodb.ObjectID.andReturn('123456789012')
 
-    MongoDBConnector = sandbox.require '../../lib/backends/mongodb_backend',
-      requires:
-        'mongodb': mongodb
+    MongoDBConnector = require '../../lib/backends/mongodb_backend'
     backend = new MongoDBConnector()
+    backend.mongodb = mongodb
     testConfigReader = new (require('../test_config_reader'))()
     backend.init(testConfigReader)
 
