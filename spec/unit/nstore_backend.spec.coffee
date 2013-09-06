@@ -8,6 +8,10 @@ describe "The nStore backend", ->
   writeEnd = null
   writeResponse = null
 
+  genericError = new Error()
+  errorNoEntity = new Error('Document does not exist')
+  errorNoEntity.errno = require('constants').ENOENT
+
   beforeEach ->
     collection = jasmine.createSpyObj('collection', [
       'all'
@@ -51,16 +55,17 @@ describe "The nStore backend", ->
   it "passes on errors when listing a collection fails", ->
     backend.list('collection', writeDocument, writeEnd)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.all, 0).thenCallIt(backend, 'error', 'whatever')
+    whenCallback(collection.all, 0)
+      .thenCallIt(backend, genericError, 'whatever')
     expect(writeDocument).not.toHaveBeenCalled()
-    expect(writeEnd).toHaveBeenCalledWith('error')
+    expect(writeEnd).toHaveBeenCalledWith(genericError)
 
   it "removes an existing collection", ->
     backend.removeCollection('collection', writeResponse)
     whenCallback(fs.exists, 1).thenCallIt(backend, true)
     expect(fs.unlink).toHaveBeenCalled()
-    whenCallback(fs.unlink, 1).thenCallIt(backend, 'error')
-    expect(writeResponse).toHaveBeenCalledWith('error')
+    whenCallback(fs.unlink, 1).thenCallIt(backend, null)
+    expect(writeResponse).toHaveBeenCalledWith(null)
 
   it "does not falter when trying to remove a non-existing collection", ->
     backend.removeCollection('collection', writeResponse)
@@ -71,37 +76,80 @@ describe "The nStore backend", ->
   it "reads a document", ->
     backend.read('collection', 'key', writeResponse)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.get, 1).thenCallIt(backend, 'error', 'document',
+    whenCallback(collection.get, 1).thenCallIt(backend, null, 'document',
         'key')
-    expect(writeResponse).toHaveBeenCalledWith('error', 'document', 'key')
+    expect(writeResponse).toHaveBeenCalledWith(null, 'document', 'key')
+
+  it "says 404 when reading a non-existing document", ->
+    backend.read('collection', 'key', writeResponse)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(collection.get, 1)
+      .thenCallIt(backend, errorNoEntity, null, 'key')
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toBe(404)
+
+  it "reports error when reading a document fails for a different reason
+ (not 404/not found)", ->
+    backend.read('collection', 'key', writeResponse)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(collection.get, 1)
+      .thenCallIt(backend, genericError, null, null)
+    expect(writeResponse).toHaveBeenCalledWith(genericError, null, null)
 
   it "creates a document", ->
     backend.create('collection', 'document', writeResponse)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.save, 2).thenCallIt(backend, 'error', 'key')
-    expect(writeResponse).toHaveBeenCalledWith('error', 'key')
+    whenCallback(collection.save, 2).thenCallIt(backend, null, 'key')
+    expect(writeResponse).toHaveBeenCalledWith(null, 'key')
+
+  it "reports error when creating a document fails", ->
+    backend.create('collection', 'document', writeResponse)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(collection.save, 2).thenCallIt(backend, genericError, null)
+    expect(writeResponse).toHaveBeenCalledWith(genericError, null)
 
   it "updates a document", ->
     backend.update('collection', 'key', 'document', writeResponse)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, undefined)
     expect(collection.save).toHaveBeenCalled()
-    whenCallback(collection.save, 2).thenCallIt(backend, 'error')
-    expect(writeResponse).toHaveBeenCalledWith('error')
+    whenCallback(collection.save, 2).thenCallIt(backend, null)
+    expect(writeResponse).toHaveBeenCalledWith(null)
 
-  it "throws 404 error when updating a non-existing document", ->
+  it "says 404 error when updating a non-existing document", ->
     backend.update('collection', 'key', 'document', writeResponse)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
-    whenCallback(collection.get, 1).thenCallIt(backend, 'error')
+    whenCallback(collection.get, 1).thenCallIt(backend, errorNoEntity)
     expect(collection.save).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalled()
     expect(writeResponse.mostRecentCall.args[0].httpStatus).toBe(404)
+
+  it "reports error when updating a document fails for a different reason
+ (not 404/not found)", ->
+    backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(collection.get, 1).thenCallIt(backend, genericError)
+    expect(collection.save).not.toHaveBeenCalled()
+    expect(writeResponse).toHaveBeenCalledWith(genericError)
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.remove, 1).thenCallIt(backend, null)
     expect(writeResponse).toHaveBeenCalled()
+
+  it "ignores not found when removing a document", ->
+    backend.remove('collection', 'key', writeResponse)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(collection.remove, 1).thenCallIt(backend, errorNoEntity)
+    expect(writeResponse).toHaveBeenCalledWith(null)
+
+  it "reports error when removing a document fails for a different reason
+ (not 404/not found)", ->
+    backend.remove('collection', 'key', writeResponse)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
+    whenCallback(collection.remove, 1).thenCallIt(backend, genericError)
+    expect(writeResponse).toHaveBeenCalledWith(genericError)
 
 
   whenCallback = (spy, callbackIndex) ->
@@ -110,4 +158,3 @@ describe "The nStore backend", ->
       thenCallIt: (callOn, args...) ->
         callback.call(callOn, args...)
     return ret
-
