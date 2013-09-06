@@ -50,11 +50,12 @@ describe "Common backend integration test:", ->
             (err) ->
               # If the backend under test is not there, we just kill the node.js
               # process to immediately stop the test run. This is extremely
-              # questionable, but right now it helps - otherwise you'll get a lot
-              # of failures in the test run and wonder what on earth is going
-              # wrong. It would be nice if Jasmine offered a version of the fail
-              # method that also stops the current spec (right now, jasmine just
-              # continues with the spec and reports all failures at the end).
+              # questionable, but right now it helps - otherwise you'll get a
+              # lot of failures in the test run and wonder what on earth is
+              # going wrong. It would be nice if Jasmine offered a version of
+              # the fail method that also stops the current spec (right now,
+              # jasmine just continues with the spec and reports all failures at
+              # the end).
               log.error(err)
               log.error("Backend #{backend_name} is not available, killing test
                   process!")
