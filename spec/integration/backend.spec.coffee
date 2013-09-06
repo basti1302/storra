@@ -29,8 +29,11 @@ describe "Common backend integration test:", ->
           "all steps finishing", TIMEOUT)
 
       beforeEach ->
+        backend = null
         finished = false
         errors = []
+        collection = null
+
         TestConfigReader = require('../test_config_reader')
         configReader = new TestConfigReader()
 
