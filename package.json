@@ -22,6 +22,7 @@
   ],
   "dependencies": {
     "dirty": "0.9.x",
+    "errno-codes": "~1.0.2",
     "js-yaml": "2.0.x",
     "mongodb": "1.2.x",
     "node-uuid": "1.4.x",
