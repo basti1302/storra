@@ -1,3 +1,5 @@
+# This spec tests the nStore backend by mocking/spying nStore and any
+# other dependency.
 describe "The nStore backend", ->
 
   fs = null
