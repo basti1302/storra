@@ -10,7 +10,7 @@ module.exports = {
     ready: {
       mergeDefaultsIntoCurrentConfiguration: {
         core: {
-          backend: './backends/node_dirty_backend'
+          backend: {$ref: 'backend'}
         }
       }
     }

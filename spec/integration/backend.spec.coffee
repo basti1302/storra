@@ -15,8 +15,8 @@ describe "Common backend integration test:", ->
   logIntermediateResults = true
 
   # define parameterized test
-  parameterized = (backend_module, backend_name) ->
-    describe "The #{backend_name} backend (without mocked dependencies)", ->
+  parameterized = (backendModule, backendName) ->
+    describe "The #{backendName} backend (without mocked dependencies)", ->
 
       backend = null
       finished = false
@@ -45,7 +45,7 @@ describe "Common backend integration test:", ->
           log.debug(be + ' has been wired.')
           backend.checkAvailable(
             () ->
-              log.debug("Backend #{backend_name} is available.")
+              log.debug("Backend #{backendName} is available.")
             ,
             (err) ->
               # If the backend under test is not there, we just kill the node.js
@@ -57,14 +57,14 @@ describe "Common backend integration test:", ->
               # jasmine just continues with the spec and reports all failures at
               # the end).
               log.error(err)
-              log.error("Backend #{backend_name} is not available, killing test
+              log.error("Backend #{backendName} is not available, killing test
                   process!")
               process.exit(1)
           )
 
         # Wire up the test wire.js context
         runs ->
-          backendSpec = "#{backend_module}_wire_spec"
+          backendSpec = "#{backendModule}_wire_spec"
           relativizr.wireRelative(backendSpec, afterWiring)
 
         # wait for wiring to be finished (by looking if backend has been set by
@@ -103,7 +103,7 @@ describe "Common backend integration test:", ->
           expectNoErrors()
 
       it "says 404 when reading non-existing document", ->
-        non_existing_doc = null
+        nonExistingDoc = null
         runs ->
           Step(
             () ->
@@ -113,17 +113,17 @@ describe "Common backend integration test:", ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              non_existing_doc = doc
+              nonExistingDoc = doc
               finished = true
           )
         waitForStepsToFinish()
         runs ->
           expect(errors[0].httpStatus).toBe(404)
-          expect(non_existing_doc).toBeNull()
+          expect(nonExistingDoc).toBeNull()
 
       it "creates and reads documents", ->
-        key_from_response = null
-        read_document = null
+        keyFromResponse = null
+        readDocument = null
         runs ->
           Step(
             () ->
@@ -133,21 +133,21 @@ describe "Common backend integration test:", ->
               if (logIntermediateResults)
                 log.info("create -> error, key: #{error}, #{key}")
               errors.push error
-              key_from_response = key.toString()
-              backend.read(collection, key_from_response, this)
+              keyFromResponse = key.toString()
+              backend.read(collection, keyFromResponse, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document = doc
+              readDocument = doc
               finished = true
           )
         waitForStepsToFinish()
         runs ->
           expectNoErrors()
-          expect(read_document).toBeDefined()
-          expect(read_document['some_attribute']).toEqual('abc')
+          expect(readDocument).toBeDefined()
+          expect(readDocument['some_attribute']).toEqual('abc')
 
       it "lists an empty collection", ->
         listing = []
@@ -175,8 +175,8 @@ describe "Common backend integration test:", ->
       it "lists a collection", ->
         keys = []
         listing = []
-        key_from_listing = null
-        read_document = null
+        keyFromListing = null
+        readDocument = null
         runs ->
           Step(
             () ->
@@ -207,14 +207,14 @@ describe "Common backend integration test:", ->
               errors.push error
               # one extra step (which does not really belong into this spec):
               # use key from listing to read single document
-              key_from_listing = listing[0]._id.toString()
-              backend.read(collection, key_from_listing, this)
+              keyFromListing = listing[0]._id.toString()
+              backend.read(collection, keyFromListing, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document = doc
+              readDocument = doc
               finished = true
           )
         waitForStepsToFinish()
@@ -233,11 +233,11 @@ describe "Common backend integration test:", ->
           expect(fromListing[1]).toBeDefined()
           expect(fromListing[1]._id.toString()).toEqual(keys[1])
           expect(fromListing[1]['some_attribute']).toEqual('xyz')
-          expect(read_document).toBeDefined()
-          if (read_document._id.toString() == keys[0])
-            expect(fromListing[0]).toEqual(read_document)
-          else if (read_document._id.toString() == keys[1])
-            expect(fromListing[1]).toEqual(read_document)
+          expect(readDocument).toBeDefined()
+          if (readDocument._id.toString() == keys[0])
+            expect(fromListing[0]).toEqual(readDocument)
+          else if (readDocument._id.toString() == keys[1])
+            expect(fromListing[1]).toEqual(readDocument)
           else
             this.fail("id of read document neither matched the key of the
                 first nor of the second created document")
@@ -261,8 +261,8 @@ describe "Common backend integration test:", ->
 
 
       it "updates a document", ->
-        key_from_response = null
-        read_document = null
+        keyFromResponse = null
+        readDocument = null
         runs ->
           Step(
             () ->
@@ -272,35 +272,35 @@ describe "Common backend integration test:", ->
               if (logIntermediateResults)
                 log.info("create -> error, key: #{error}, #{key}")
               errors.push error
-              key_from_response = key.toString()
-              backend.update(collection, key_from_response,
+              keyFromResponse = key.toString()
+              backend.update(collection, keyFromResponse,
                   {second_attribute: 123, third_attribute: 'baz'}, this)
             ,
             (error) ->
               if (logIntermediateResults)
                 log.info("update -> error: #{error}")
               errors.push error
-              backend.read(collection, key_from_response, this)
+              backend.read(collection, keyFromResponse, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document = doc
+              readDocument = doc
               finished = true
           )
         waitForStepsToFinish()
         runs ->
           expectNoErrors()
-          expect(read_document).not.toBeNull()
-          expect(read_document.first_attribute).toBeUndefined()
-          expect(read_document.second_attribute).toEqual(123)
-          expect(read_document.third_attribute).toEqual('baz')
+          expect(readDocument).not.toBeNull()
+          expect(readDocument.first_attribute).toBeUndefined()
+          expect(readDocument.second_attribute).toEqual(123)
+          expect(readDocument.third_attribute).toEqual('baz')
 
       it "removes a document", ->
-        key_from_response = null
-        read_document_before_remove = null
-        read_document_after_remove = null
+        keyFromResponse = null
+        readDocumentBeforeRemove = null
+        readDocumentAfterRemove = null
         runs ->
           Step(
             () ->
@@ -310,39 +310,39 @@ describe "Common backend integration test:", ->
               if (logIntermediateResults)
                 log.info("create -> error, key: #{error}, #{key}")
               errors.push error
-              key_from_response = key.toString()
-              backend.read(collection, key_from_response, this)
+              keyFromResponse = key.toString()
+              backend.read(collection, keyFromResponse, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document_before_remove = doc
-              backend.remove(collection, key_from_response, this)
+              readDocumentBeforeRemove = doc
+              backend.remove(collection, keyFromResponse, this)
             ,
             (error) ->
               if (logIntermediateResults)
                 log.info("remove -> error: #{error}")
               errors.push error
-              backend.read(collection, key_from_response, this)
+              backend.read(collection, keyFromResponse, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document_after_remove = doc
+              readDocumentAfterRemove = doc
               finished = true
           )
         waitForStepsToFinish()
         runs ->
           expectNoError(i, error) for error, i in errors[0..2]
           expect(errors[3].httpStatus).toBe(404)
-          expect(read_document_before_remove).not.toBeNull()
-          expect(read_document_after_remove).toBeNull()
+          expect(readDocumentBeforeRemove).not.toBeNull()
+          expect(readDocumentAfterRemove).toBeNull()
 
       it "removes a document twice while being idempotent", ->
-        key_from_response = null
-        read_document_after_remove = null
+        keyFromResponse = null
+        readDocumentAfterRemove = null
         runs ->
           Step(
             () ->
@@ -352,38 +352,38 @@ describe "Common backend integration test:", ->
               if (logIntermediateResults)
                 log.info("create -> error, key: #{error}, #{key}")
               errors.push error
-              key_from_response = key.toString()
-              backend.remove(collection, key_from_response, this)
+              keyFromResponse = key.toString()
+              backend.remove(collection, keyFromResponse, this)
             ,
             (error) ->
               if (logIntermediateResults)
                 log.info("remove -> error: #{error}")
               errors.push error
-              backend.remove(collection, key_from_response, this)
+              backend.remove(collection, keyFromResponse, this)
             ,
             (error) ->
               if (logIntermediateResults)
                 log.info("remove -> error: #{error}")
               errors.push error
-              backend.read(collection, key_from_response, this)
+              backend.read(collection, keyFromResponse, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document_after_remove = doc
+              readDocumentAfterRemove = doc
               finished = true
           )
         waitForStepsToFinish()
         runs ->
           expectNoError(i, error) for error, i in errors[0..2]
           expect(errors[3].httpStatus).toBe(404)
-          expect(read_document_after_remove).toBeNull()
+          expect(readDocumentAfterRemove).toBeNull()
 
       it "does not return a document from a removed collection", ->
-        key_from_response = null
-        read_document_before_remove = null
-        read_document_after_remove = null
+        keyFromResponse = null
+        readDocumentBeforeRemove = null
+        readDocumentAfterRemove = null
         runs ->
           Step(
             () ->
@@ -393,35 +393,35 @@ describe "Common backend integration test:", ->
               if (logIntermediateResults)
                 log.info("create -> error, key: #{error}, #{key}")
               errors.push error
-              key_from_response = key.toString()
-              backend.read(collection, key_from_response, this)
+              keyFromResponse = key.toString()
+              backend.read(collection, keyFromResponse, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document_before_remove = doc
+              readDocumentBeforeRemove = doc
               backend.removeCollection(collection, this)
             ,
             (error) ->
               if (logIntermediateResults)
                 log.info("removeCollection -> error: #{error}")
               errors.push error
-              backend.read(collection, key_from_response, this)
+              backend.read(collection, keyFromResponse, this)
             ,
             (error, doc, key) ->
               if (logIntermediateResults)
                 log.info("read -> error, doc, key: #{error}, #{doc}, #{key}")
               errors.push error
-              read_document_after_remove = doc
+              readDocumentAfterRemove = doc
               finished = true
           )
         waitForStepsToFinish()
         runs ->
           expectNoError(i, error) for error, i in errors[0..2]
           expect(errors[3].httpStatus).toBe(404)
-          expect(read_document_before_remove).not.toBeNull()
-          expect(read_document_after_remove).toBeNull()
+          expect(readDocumentBeforeRemove).not.toBeNull()
+          expect(readDocumentAfterRemove).toBeNull()
 
 
       ###
@@ -447,6 +447,6 @@ describe "Common backend integration test:", ->
 
   parameterized('./backends/node_dirty_backend', 'node-dirty')
   parameterized('./backends/nstore_backend', 'nStore')
-  # for the MongoDB integration tests, the MongoDB has to run (obviously)
+  # for the MongoDB integration tests, MongoDB has to run (obviously)
   parameterized('./backends/mongodb_backend', 'MongoDB')
 
