@@ -30,8 +30,9 @@ describe "Integration from routing to backend test: storra", ->
     runs ->
       wire(test_wire_spec,
           { require: require }).then(afterWiring, console.error)
+
     # wait for wiring to be finished (by looking if router has been set by
-    # afterWiring
+    # afterWiring)
     waitsFor ->
       router
     , "wire context to have been initialized", 500
@@ -58,7 +59,6 @@ describe "Integration from routing to backend test: storra", ->
       expect(cleanupResponse.status).toEqual(204)
 
   it "responds to OPTIONS / with 200", ->
-    expect(true).toBe(true)
     forOptions '/', (response) ->
       expectOptionsResponse response
 

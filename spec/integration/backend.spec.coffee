@@ -1,6 +1,7 @@
-# This spec tests the node-dirty backend without mocking/spying node-dirty or
-# any other dependencies, that is, it truely accesses the node-dirty in-memory
-# db and even lets node-dirty persist to disk.
+# This spec tests all backend connectors without mocking/spying their
+# dependencies. That is, it truely accesses the database used by the connector.
+# In case of the MongoDB backend connector, MongoDB needs to be up and running
+# for this spec to succeed.
 describe "Common backend integration test:", ->
 
   TIMEOUT = 5000
@@ -8,6 +9,8 @@ describe "Common backend integration test:", ->
   log = require('../../lib/log')
   Step = require('step')
   uuid = require('node-uuid')
+  wire = require('wire')
+  relativizr = new (require('../../lib/relativizr'))()
 
   logIntermediateResults = true
 
@@ -28,30 +31,45 @@ describe "Common backend integration test:", ->
       beforeEach ->
         finished = false
         errors = []
-        Connector = require backend_module
-        backend = new Connector()
         TestConfigReader = require('../test_config_reader')
         configReader = new TestConfigReader()
-        backend.init(configReader)
-        collection = uuid.v1()
 
-        backend.checkAvailable(
-          () ->
-            log.debug("Backend #{backend_name} is available.")
-          ,
-          (err) ->
-            # If the backend under test is not there, we just kill the node.js
-            # process to immediately stop the test run. This is extremely
-            # questionable, but right now it helps - otherwise you'll get a lot
-            # of failures in the test run and wonder what on earth is going
-            # wrong. It would be nice if Jasmine offered a version of the fail
-            # method that also stops the current spec (right now, jasmine just
-            # continues with the spec and reports all failures at the end).
-            log.error(err)
-            log.error("Backend #{backend_name} is not available, killing test
-                process!")
-            process.exit(1)
-        )
+        # When wiring has finished, we fetch the backend connector from the
+        # wire.js context
+        afterWiring = (context) ->
+          backend = context.backend
+          backend.init(configReader)
+          log.debug(be + ' has been wired.')
+          backend.checkAvailable(
+            () ->
+              log.debug("Backend #{backend_name} is available.")
+            ,
+            (err) ->
+              # If the backend under test is not there, we just kill the node.js
+              # process to immediately stop the test run. This is extremely
+              # questionable, but right now it helps - otherwise you'll get a lot
+              # of failures in the test run and wonder what on earth is going
+              # wrong. It would be nice if Jasmine offered a version of the fail
+              # method that also stops the current spec (right now, jasmine just
+              # continues with the spec and reports all failures at the end).
+              log.error(err)
+              log.error("Backend #{backend_name} is not available, killing test
+                  process!")
+              process.exit(1)
+          )
+
+        # Wire up the test wire.js context
+        runs ->
+          backendSpec = "#{backend_module}_wire_spec"
+          relativizr.wireRelative(backendSpec, afterWiring)
+
+        # wait for wiring to be finished (by looking if backend has been set by
+        # afterWiring)
+        waitsFor ->
+          backend
+        , "wire context to have been initialized", 500
+
+        collection = uuid.v1()
 
       afterEach ->
         log.debug("afterEach: closing connection")
@@ -423,8 +441,8 @@ describe "Common backend integration test:", ->
   Call all parameterized tests
   ###
 
-  parameterized('../../lib/backends/node_dirty_backend', 'node-dirty')
-  parameterized('../../lib/backends/nstore_backend', 'nStore')
+  parameterized('./backends/node_dirty_backend', 'node-dirty')
+  parameterized('./backends/nstore_backend', 'nStore')
   # for the MongoDB integration tests, the MongoDB has to run (obviously)
-  parameterized('../../lib/backends/mongodb_backend', 'MongoDB')
+  parameterized('./backends/mongodb_backend', 'MongoDB')
 

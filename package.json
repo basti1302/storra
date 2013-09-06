@@ -25,7 +25,7 @@
     "js-yaml": "2.0.x",
     "mongodb": "1.2.x",
     "node-uuid": "1.4.x",
-    "nstore": "0.5.1",
+    "nstore": "git+https://github.com/basti1302/nstore.git#constants",
     "winston": "~0.7.2",
     "wire": "~0.10.0"
   },
