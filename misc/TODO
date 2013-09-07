@@ -4,33 +4,28 @@
 == Storra Core Features ==
 
 = Basics =
-* Explain setup in README.md
-* Put it on Travis
 * Add LICENSE. Which?
-* Remove code duplication in backends. Especially the two in memory backends
+* Remove code duplication in backends. Especially the two in-memory backends
   have some duplicated code, but mongo also.
-* Also create backend via wire.js
 * Remove inconsistency: When calling methods which take an optional parameter
 (for example error) and the caller does not want to pass a value for the
 parameter, it sometimes uses null, sometimes undefined and sometimes gives
 no argument at all (which is equivalent to undefined, but is syntactically
 different). Use the "pass explicit null style" everywhere.
 * TODO comments in various files
-* Also let create third party module by wire.js (mongo-db, node-dirty, nstore,
-file system) instead of simply requiring them. Then, leverage this in unit
-specs and remove more sandboxed-module stuff.
 
 = Misc =
-* Collections are always created on the fly, even if we GET a non-existing collection, thus, 200 is the responsee for GET /non-existing-collection, which seems odd. 404 would be more appropriate. Not sure how well other backends support this, they also seem to create any accessed collection on the fly.
+* Collections might be created on the fly in requests where we would not expect
+  this behaviour.  Check that collections are not created on the fly during
+  - update document
+  - delete document
+  -GET /collection/document.
 * Get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
 * configure routing per yaml? let backend configure routing?
 * Check out warehouse.js and RQL
 
 = Tests =
 * Leverage dependency injection in unit specs, now that we use wire.js
-* With winston, some specs emit a event listener leak, I guess because the
-  winston stuff is registered for each single spec. Possible fix: Replace
-  winston logger in tests by some simple console.log wrapper.
 * Some specs are slow. WTF?
   unit:
     mongodb
