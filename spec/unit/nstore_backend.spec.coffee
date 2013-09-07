@@ -10,7 +10,7 @@ describe "The nStore backend", ->
   writeEnd = null
   writeResponse = null
 
-  genericError = new Error()
+  genericError = new Error('test error')
   errorNoEntity = new Error('Document does not exist')
   errorNoEntity.errno = require('constants').ENOENT
 
