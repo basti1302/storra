@@ -79,10 +79,11 @@ If you use the MongoDB backend, you can configure some more options specific to 
 Usage
 -----
 
+* POST to / to create a new collection
 * GET /collection to list a collection of documents
 * POST to /collection to create a new document
 * GET /collection/key to retrieve a document
 * PUT /collection/key to update a document
 * DELETE /collection/key to delete a document
 
-Currently, non-existing collections are created on the fly when you access them (either by GET or by POST) instead of returning HTTP 404 Not Found. This is why there is no method to explicitly create a collection. This is simply a consequence of the fact that all existing backends handle access to non-existing collections this way. This behaviour will probably change in a future version (it seems quite questionable that a GET should create something) or it might be configurable.
+Non-existing collections are created on the fly when you create a document in them (but not if you GET a non-existing collection or a document in a non-existing collection).

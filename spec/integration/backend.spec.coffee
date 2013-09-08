@@ -84,6 +84,23 @@ describe "Common backend integration test:", ->
           if (err)
             log.error(err)
 
+      it "says 409 when creating the same collection twice", ->
+        runs ->
+          Step(
+            () ->
+              backend.createCollection(collection, this)
+            (error) ->
+              backend.createCollection(collection, this)
+            (error) ->
+              errors.push error
+              finished = true
+          )
+        waitForStepsToFinish()
+        runs ->
+          expect(errors[0]).toBeTruthy()
+          expect(errors[0].httpStatus).toBeTruthy()
+          expect(errors[0].httpStatus).toBe(409)
+
       it "removes collections idempotently", ->
         runs ->
           Step(
@@ -149,7 +166,7 @@ describe "Common backend integration test:", ->
           expect(readDocument).toBeDefined()
           expect(readDocument['some_attribute']).toEqual('abc')
 
-      it "lists an empty collection", ->
+      it "says 404 when listing a non-existing collection collection", ->
         listing = []
         runs ->
           Step(
@@ -169,10 +186,35 @@ describe "Common backend integration test:", ->
           )
         waitForStepsToFinish()
         runs ->
+          expect(errors[0].httpStatus).toBe(404)
+          expect(listing.length).toEqual(0)
+
+      it "creates an empty collection and lists it", ->
+        listing = []
+        runs ->
+          Step(
+            () ->
+              backend.createCollection(collection, this)
+            (error) ->
+              backend.list(collection,
+                (doc) ->
+                  log.error("unexpected document: #{doc}")
+                  listing.push doc
+              ,this)
+            ,
+            (error) ->
+              if (logIntermediateResults)
+                log.info("list end -> error, list: #{error},
+                    #{JSON.stringify(listing)}")
+              errors.push error
+              finished = true
+          )
+        waitForStepsToFinish()
+        runs ->
           expectNoErrors()
           expect(listing.length).toEqual(0)
 
-      it "lists a collection", ->
+      it "lists a non-empty collection", ->
         keys = []
         listing = []
         keyFromListing = null
