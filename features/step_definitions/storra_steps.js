@@ -13,15 +13,23 @@ var HttpStepsWrapper = function () {
 
   this.Given(/^an empty collection$/, function(callback) {
     this.generateCollectionId()
-    // currently, from the perspective of a storra client, there is no
-    // difference between an empty and a non-existing collection
-    callback()
+    var world = this
+    /* jshint -W064 */
+    Step(
+      function post() {
+        world.post(world.rootPath(),
+          '{"name": "' + world.collection + '"}', this)
+      },
+      function callCallback(err, location) {
+        if (err) throw err
+        callback()
+      }
+    )
+    /* jshint +W064 */
   })
 
   this.Given(/^a non\-existing collection$/, function(callback) {
     this.generateCollectionId()
-    // currently, from the perspective of a storra client, there is no
-    // difference between an empty and a non-existing collection
     callback()
   })
 

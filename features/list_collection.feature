@@ -12,9 +12,8 @@ Feature: List a Collection
   Scenario: List a non-existing collection
     Given a non-existing collection
     When I GET the collection
-    # 404 would be much better, but 200 is the status quo.
-    Then the http status should be 200
-    And I should see an empty list of documents
+    Then the http status should be 404
+    And I should see "The requested resource was not found."
 
   Scenario: List a collection with documents
     Given a collection with documents

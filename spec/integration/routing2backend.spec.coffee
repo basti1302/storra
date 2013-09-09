@@ -89,9 +89,34 @@ describe "Integration from routing to backend test:", ->
             .toMatch(/This is storra, the REST data store./)
           expect(response.body).toContain('GET / to display this text,\n')
 
-      it "responds to POST / with 501 (not implemented)", ->
+      it "creates a collection on POST to /", ->
+        forRequests [
+          new MockRequest('POST', '/', '{"name": "' + collectionName + '"}')
+          new MockRequest('GET', collectionUrl)
+        ], (response) ->
+          expect(responses[0].status).toEqual(201)
+          expect(responses[1].status).toEqual(200)
+          expect(responses[1].body[0]).toEqual('[')
+          expect(responses[1].body[1]).toEqual(']')
+
+      it "responds to POST / with 409, if collection already exists", ->
+        forRequests [
+          new MockRequest('POST', '/', '{"name": "' + collectionName + '"}')
+          new MockRequest('POST', '/', '{"name": "' + collectionName + '"}')
+        ], (response) ->
+          expect(responses[0].status).toEqual(201)
+          expect(responses[1].status).toEqual(409)
+
+      it "responds to POST / with 400, if no POST data is present", ->
+        forPostWithEmptyBody '/', (response) ->
+          expect(responses[0].status).toEqual(400)
+
+      # create collection - body has no name attribute
+      it "responds to POST / with 400,
+if no collection name has been supplied", ->
         forPost '/', (response) ->
-          expect(response.status).toEqual(501)
+          expect(response.status).toEqual(400)
+        , '{"sadness": "no name attribute present"}'
 
       it "responds to PUT / with 501 (not implemented)", ->
         forPut '/', (response) ->
@@ -105,21 +130,12 @@ describe "Integration from routing to backend test:", ->
         forOptions collectionUrl, (response) ->
           expectOptionsResponse response
 
-      # TODO This is very questionable. The colletion is created on demand and
-      # the response is 200 with an empty collection, though the collection did
-      # not exist before this request. Since a GET request SHOULD not have any
-      # side effects on the resource (in particular, a GET should not create a
-      # new resource, not creating the collection on the fly would be much
-      # better. In this case we could return 404. OTOH, some backends (for
-      # example, MongoDB) do create the collection automatically with the first
-      # request. To achieve the desired behaviour we would need to check for
-      # existence before every list/ query by other means, which might have an
-      # performance impact.
-      it "responds to GET /collection with 200 if collection does not exist
-           - though 404 would be correct", ->
+      it "responds to GET /collection with 404
+ if collection does not existt", ->
         forGet collectionUrl, (response) ->
-          expect(response.status).toEqual(200)
-          expect(response.body).toEqual(['[',']'])
+          expect(response.status).toEqual(404)
+          expect(response.body[0]).toContain(
+            'The requested resource was not found.')
 
       it "responds to GET /collection with 200 if collection exists and has a
           document", ->
@@ -133,6 +149,7 @@ describe "Integration from routing to backend test:", ->
           expect(responses[1].body[1]).toContain('{"a":"b","_id":')
           expect(responses[1].body[2]).toEqual(']')
 
+      # PUT /collection could be used to rename a collection
       it "responds to PUT /collection with 501 (not implemented)", ->
         forPut collectionUrl, (response) ->
           expect(response.status).toEqual(501)
@@ -152,9 +169,7 @@ describe "Integration from routing to backend test:", ->
           expect(responses[1].status).toEqual(200)
           expect(responses[1].body[1]).toContain('{"a":"b","_id":')
           expect(responses[2].status).toEqual(204)
-          expect(responses[3].body[0]).toEqual('[')
-          expect(responses[3].body[1]).toEqual(']')
-          expect(responses[3].body.length).toEqual(2)
+          expect(responses[3].status).toEqual(404)
 
       it "responds to OPTIONS /collection/key with 200 OK", ->
         forOptions keyUrl, (response) ->
@@ -172,13 +187,13 @@ describe "Integration from routing to backend test:", ->
       it "responds to GET /collection/key with 200 if documents exists", ->
         location = null
         forRequests [
-          new MockRequest('POST', collectionUrl,
-            '{"a": "b"}', null, (response) ->
-            location = response.headers['location']
+          new MockRequest('POST',
+            collectionUrl, '{"a": "b"}', null, (response) ->
+              location = response.headers['location']
           )
-          new MockRequest('GET', 'will be set by before handler',
-            null, (request) ->
-            request.url = location
+          new MockRequest('GET',
+            'will be set by before handler', null, (request) ->
+              request.url = location
           , null)
         ], (response) ->
           expect(responses[0].status).toEqual(201)
@@ -201,12 +216,13 @@ describe "Integration from routing to backend test:", ->
       it "updates an existing document", ->
         location = null
         forRequests [
-          new MockRequest('POST', collectionUrl,
-            '{"e": "f"}', null, (response) ->
-            location = response.headers['location']
+          new MockRequest('POST',
+            collectionUrl, '{"e": "f"}', null, (response) ->
+              location = response.headers['location']
           )
-          new MockRequest('PUT', 'ignored', '{"x": "y"}', (request) ->
-            request.url = location
+          new MockRequest('PUT',
+            'ignored', '{"x": "y"}', (request) ->
+              request.url = location
           )
           new MockRequest('GET', 'ignored', null, (request) ->
             request.url = location
@@ -226,12 +242,13 @@ describe "Integration from routing to backend test:", ->
       it "deletes a document on DELETE /collection/key", ->
         location = null
         forRequests [
-          new MockRequest('POST', collectionUrl,
-            '{"a": "b"}', null, (response) ->
-            location = response.headers['location']
+          new MockRequest('POST',
+            collectionUrl, '{"a": "b"}', null, (response) ->
+              location = response.headers['location']
           )
-          new MockRequest('GET', 'ignored', null, (request) ->
-            request.url = location
+          new MockRequest('GET',
+            'ignored', null, (request) ->
+              request.url = location
           )
           new MockRequest('DELETE', 'ignored', null, (request) ->
             request.url = location
@@ -297,6 +314,9 @@ describe "Integration from routing to backend test:", ->
       forPost = (path, responseCheck, body) ->
         forSingleRequest('POST', path, responseCheck, body)
 
+      forPostWithEmptyBody = (path, responseCheck) ->
+        forSingleRequest('POST', path, responseCheck, '')
+
       forPut = (path, responseCheck, body) ->
         forSingleRequest('PUT', path, responseCheck, body)
 
@@ -308,7 +328,7 @@ describe "Integration from routing to backend test:", ->
         responses[0] = new MockResponse()
         runs ->
           router.route requests[0], responses[0]
-          if (requests[0].body)
+          if (requests[0].body || requests[0].body == '')
             requests[0].listener['data'](requests[0].body)
             requests[0].listener['end']()
         waitsFor ->

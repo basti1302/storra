@@ -8,7 +8,5 @@ Feature: Delete a Collection
     When I DELETE the collection
     Then the http status should be 204
     When I GET the collection
-    # 404 would be much better, but 200 is the status quo.
-    Then the http status should be 200
-    # "And I should see no content" would be much better, but...
-    And I should see an empty list of documents
+    Then the http status should be 404
+    And I should see "The requested resource was not found."
