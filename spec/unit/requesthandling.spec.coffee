@@ -177,9 +177,16 @@ describe "The request handler", ->
     expectResponse 501
     expectNoContent()
 
+  getCallback = (spy, callbackIndex) ->
+    if (!spy.mostRecentCall || !spy.mostRecentCall.args)
+      throw new Error('Spy has not received any calls yet.')
+    else
+      return spy.mostRecentCall.args[callbackIndex]
 
   whenCallback = (spy, callbackIndex) ->
-    callback = spy.mostRecentCall.args[callbackIndex]
+    callback = getCallback(spy, callbackIndex)
+    if (!callback || typeof callback != 'function')
+      throw new Error('Not a callback: ' + JSON.stringify(callback))
     ret =
       thenCallIt: (callOn, args...) ->
         callback.call(callOn, args...)

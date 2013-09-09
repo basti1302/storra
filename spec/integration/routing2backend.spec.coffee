@@ -3,7 +3,7 @@
 # of the equation. The backends are not mocked, so real database backends are
 # used. Like backend.spec.coffee, this spec is parameterized and will be
 # executed once for each backend.
-ddescribe "Integration from routing to backend test:", ->
+describe "Integration from routing to backend test:", ->
 
   log = require('../../lib/log')
   Step = require('step')

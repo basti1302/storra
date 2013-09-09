@@ -42,10 +42,18 @@ describe "The node-dirty backend (with mocked dependencies)", ->
 
   it "lists a collection", ->
     backend.list('collection', writeDocument, writeEnd)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(collection.once, 1).thenCallIt(backend)
     whenCallback(collection.forEach, 0).thenCallIt(backend, 'key', {a: "b"})
     expect(writeDocument).toHaveBeenCalledWith({a: "b", _id: 'key'})
     expect(writeEnd).toHaveBeenCalledWith(null)
+
+  it "says 404 when listing a non-existing collection", ->
+    backend.list('collection', writeDocument, writeEnd)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(collection.once).not.toHaveBeenCalled()
+    expect(writeDocument).not.toHaveBeenCalled()
+    expect(writeEnd.mostRecentCall.args[0].httpStatus).toBe(404)
 
   # Duplication: Same test (and same implementation) as for nStore backend
   it "removes an existing collection", ->
@@ -105,9 +113,16 @@ describe "The node-dirty backend (with mocked dependencies)", ->
     expect(collection.rm).toHaveBeenCalledWith('key')
     expect(writeResponse).toHaveBeenCalled()
 
+  getCallback = (spy, callbackIndex) ->
+    if (!spy.mostRecentCall || !spy.mostRecentCall.args)
+      throw new Error('Spy has not received any calls yet.')
+    else
+      return spy.mostRecentCall.args[callbackIndex]
 
   whenCallback = (spy, callbackIndex) ->
-    callback = spy.mostRecentCall.args[callbackIndex]
+    callback = getCallback(spy, callbackIndex)
+    if (!callback || typeof callback != 'function')
+      throw new Error('Not a callback: ' + JSON.stringify(callback))
     ret =
       thenCallIt: (callOn, args...) ->
         callback.call(callOn, args...)

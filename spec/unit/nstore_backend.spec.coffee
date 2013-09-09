@@ -47,6 +47,8 @@ describe "The nStore backend", ->
 
   it "lists a collection", ->
     backend.list('collection', writeDocument, writeEnd)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
+    whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.all, 0).thenCallIt(backend, undefined,
         {key1: {a: "b"}, key2: {c: "d"}})
@@ -54,8 +56,16 @@ describe "The nStore backend", ->
     expect(writeDocument).toHaveBeenCalledWith({c: "d", _id: "key2"})
     expect(writeEnd).toHaveBeenCalledWith(null)
 
+  it "says 404 when listing a non-existing collection", ->
+    backend.list('collection', writeDocument, writeEnd)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(nStore.new).not.toHaveBeenCalled()
+    expect(writeDocument).not.toHaveBeenCalled()
+    expect(writeEnd.mostRecentCall.args[0].httpStatus).toBe(404)
+
   it "passes on errors when listing a collection fails", ->
     backend.list('collection', writeDocument, writeEnd)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.all, 0)
       .thenCallIt(backend, genericError, 'whatever')
@@ -153,9 +163,16 @@ describe "The nStore backend", ->
     whenCallback(collection.remove, 1).thenCallIt(backend, genericError)
     expect(writeResponse).toHaveBeenCalledWith(genericError)
 
+  getCallback = (spy, callbackIndex) ->
+    if (!spy.mostRecentCall || !spy.mostRecentCall.args)
+      throw new Error('Spy has not received any calls yet.')
+    else
+      return spy.mostRecentCall.args[callbackIndex]
 
   whenCallback = (spy, callbackIndex) ->
-    callback = spy.mostRecentCall.args[callbackIndex]
+    callback = getCallback(spy, callbackIndex)
+    if (!callback || typeof callback != 'function')
+      throw new Error('Not a callback: ' + JSON.stringify(callback))
     ret =
       thenCallIt: (callOn, args...) ->
         callback.call(callOn, args...)

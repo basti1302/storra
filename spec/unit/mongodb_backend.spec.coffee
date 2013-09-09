@@ -27,6 +27,7 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     collection.find.andReturn(cursor)
     db = jasmine.createSpyObj('db', [
       'collection'
+      'collectionNames'
       'dropCollection'
     ])
     db.collection.andReturn(collection)
@@ -74,22 +75,35 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     expect(mongoClient.open).not.toHaveBeenCalled()
 
   it "waits for a connection to be established if neccessary", ->
-    backend.setRetryParameters(3, 10)
+    # all times in milliseconds
+    maxRetries = 3
+    timeBetweenRetries = 10
+    slack = 1000
+    backend.setRetryParameters(maxRetries, timeBetweenRetries)
     shouldHaveConnected = false
+    db.collectionNames.andReturn('collection')
     runs ->
       mongoClient._db = { openCalled: true, _state: 'connecting' }
-      backend.list('collection', writeDocument, writeEnd)
+      backend.list('collection',
+        (doc) ->
+          console.log("unexpected document: #{doc}")
+        ,this)
+      # make mongo backend connector think that it has successfully acquired a
+      # connection after 15 ms
       setTimeout(() ->
         mongoClient._db._state = 'connected'
-      , 15)
+      , timeBetweenRetries + 5)
+      # mongo backend connector should have noticed that the connections has
+      # been acquired on the next retry.
       setTimeout(() ->
+        mongoClient._db._state = 'connected'
         shouldHaveConnected = true
-      , 25)
+      , 2 * timeBetweenRetries + 5)
     waitsFor(() ->
+      if shouldHaveConnected
+        expect(db.collectionNames).toHaveBeenCalled()
       return shouldHaveConnected
-    , 3 * 10 + 100)
-    runs ->
-      expect(db.collection).toHaveBeenCalled()
+    , maxRetries * timeBetweenRetries + slack)
 
   it "does not wait infinitely long for a connection to be established", ->
     backend.setRetryParameters(3, 10)
@@ -114,6 +128,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
 
   it "lists a collection", ->
     backend.list('collection', writeDocument, writeEnd)
+    whenCallback(db.collectionNames, 2).
+      thenCallIt(backend, null, ['storra.collection'])
     cb = getCallback(cursor.each, 0)
     cb.call(backend, undefined, {a: "b"})
     cb.call(backend, undefined, {c: "d"})
@@ -207,10 +223,15 @@ describe "The MongoDB backend (with mocked dependencies)", ->
     expect(writeResponse).toHaveBeenCalledWith('error')
 
   getCallback = (spy, callbackIndex) ->
-    callback = spy.mostRecentCall.args[callbackIndex]
+    if (!spy.mostRecentCall || !spy.mostRecentCall.args)
+      throw new Error('Spy has not received any calls yet.')
+    else
+      return spy.mostRecentCall.args[callbackIndex]
 
   whenCallback = (spy, callbackIndex) ->
     callback = getCallback(spy, callbackIndex)
+    if (!callback || typeof callback != 'function')
+      throw new Error('Not a callback: ' + JSON.stringify(callback))
     ret =
       thenCallIt: (callOn, args...) ->
         callback.call(callOn, args...)
