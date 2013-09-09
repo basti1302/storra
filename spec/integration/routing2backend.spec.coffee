@@ -387,6 +387,4 @@ if no collection name has been supplied", ->
 
   parameterized('node_dirty', 'node-dirty')
   parameterized('nstore', 'nStore')
-  # for the MongoDB integration tests, MongoDB has to run (obviously)
   parameterized('mongodb', 'MongoDB')
-

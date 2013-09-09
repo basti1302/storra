@@ -73,6 +73,7 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   it "reads a document", ->
     collection.get.andReturn({a: "b"})
     backend.read('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.get).toHaveBeenCalledWith('key')
     expect(writeResponse).toHaveBeenCalledWith(null, {a: "b", _id: 'key'},
@@ -81,9 +82,19 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   it "says 404 when reading an non-existing document", ->
     collection.get.andReturn(null)
     backend.read('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.get).toHaveBeenCalledWith('key')
-    expect(writeResponse).toHaveBeenCalledWith(jasmine.any(Object), null, 'key')
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
+
+  it "says 404 when reading a document from a non-existing collection", ->
+    collection.get.andReturn(null)
+    backend.read('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(collection.once).not.toHaveBeenCalled()
+    expect(collection.get).not.toHaveBeenCalled()
+    expect(writeResponse).toHaveBeenCalled()
     expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
 
   it "creates a document", ->
@@ -95,23 +106,44 @@ describe "The node-dirty backend (with mocked dependencies)", ->
   it "updates a document", ->
     collection.get.andReturn({a: "b"})
     backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.set).toHaveBeenCalledWith('key', 'document')
     expect(writeResponse).toHaveBeenCalledWith(null)
 
-  it "throws 404 error when updating a non-existing document", ->
+  it "says 404 error when updating a non-existing document", ->
     collection.get.andReturn(null)
     backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(collection.once, 1).thenCallIt(backend)
+    expect(collection.set).not.toHaveBeenCalled()
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
+
+  it "says 404 error when updating a document in a non-existing collection", ->
+    collection.get.andReturn(null)
+    backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(collection.once).not.toHaveBeenCalled()
     expect(collection.set).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalled()
     expect(writeResponse.mostRecentCall.args[0].httpStatus).toEqual(404)
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(collection.once, 1).thenCallIt(backend)
     expect(collection.rm).toHaveBeenCalledWith('key')
     expect(writeResponse).toHaveBeenCalled()
+
+  it "ignores non-existing collection when removing a document", ->
+    backend.remove('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(collection.once).not.toHaveBeenCalled()
+    expect(collection.rm).not.toHaveBeenCalled()
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0]).toBe(null)
+
 
   getCallback = (spy, callbackIndex) ->
     if (!spy.mostRecentCall || !spy.mostRecentCall.args)

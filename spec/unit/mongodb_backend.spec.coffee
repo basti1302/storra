@@ -214,8 +214,8 @@ describe "The MongoDB backend (with mocked dependencies)", ->
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
-    whenCallback(collection.remove, 1).thenCallIt(backend, undefined, 42)
-    expect(writeResponse).toHaveBeenCalledWith(undefined)
+    whenCallback(collection.remove, 1).thenCallIt(backend, null, 42)
+    expect(writeResponse).toHaveBeenCalledWith(null)
 
   it "passes on the error when removing a document", ->
     backend.remove('collection', 'key', writeResponse)

@@ -489,6 +489,4 @@ describe "Common backend integration test:", ->
 
   parameterized('./backends/node_dirty_backend', 'node-dirty')
   parameterized('./backends/nstore_backend', 'nStore')
-  # for the MongoDB integration tests, MongoDB has to run (obviously)
   parameterized('./backends/mongodb_backend', 'MongoDB')
-

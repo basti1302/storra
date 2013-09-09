@@ -87,6 +87,7 @@ describe "The nStore backend", ->
 
   it "reads a document", ->
     backend.read('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, null, 'document',
         'key')
@@ -94,15 +95,24 @@ describe "The nStore backend", ->
 
   it "says 404 when reading a non-existing document", ->
     backend.read('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1)
       .thenCallIt(backend, errorNoEntity, null, 'key')
     expect(writeResponse).toHaveBeenCalled()
     expect(writeResponse.mostRecentCall.args[0].httpStatus).toBe(404)
 
+  it "says 404 when reading a document from a non-existing collection", ->
+    backend.read('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(nStore.new).not.toHaveBeenCalled()
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toBe(404)
+
   it "reports error when reading a document fails for a different reason
  (not 404/not found)", ->
     backend.read('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1)
       .thenCallIt(backend, genericError, null, null)
@@ -122,6 +132,7 @@ describe "The nStore backend", ->
 
   it "updates a document", ->
     backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, undefined)
     expect(collection.save).toHaveBeenCalled()
@@ -130,15 +141,24 @@ describe "The nStore backend", ->
 
   it "says 404 error when updating a non-existing document", ->
     backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, errorNoEntity)
     expect(collection.save).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalled()
     expect(writeResponse.mostRecentCall.args[0].httpStatus).toBe(404)
 
+  it "says 404 error when updating a non-existing document", ->
+    backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(nStore.new).not.toHaveBeenCalled()
+    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse.mostRecentCall.args[0].httpStatus).toBe(404)
+
   it "reports error when updating a document fails for a different reason
  (not 404/not found)", ->
     backend.update('collection', 'key', 'document', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.get, 1).thenCallIt(backend, genericError)
     expect(collection.save).not.toHaveBeenCalled()
@@ -146,19 +166,28 @@ describe "The nStore backend", ->
 
   it "removes a document", ->
     backend.remove('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.remove, 1).thenCallIt(backend, null)
-    expect(writeResponse).toHaveBeenCalled()
+    expect(writeResponse).toHaveBeenCalledWith(null)
 
   it "ignores not found when removing a document", ->
     backend.remove('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.remove, 1).thenCallIt(backend, errorNoEntity)
+    expect(writeResponse).toHaveBeenCalledWith(null)
+
+  it "ignores non-existing collections when removing a document", ->
+    backend.remove('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, false)
+    expect(nStore.new).not.toHaveBeenCalled()
     expect(writeResponse).toHaveBeenCalledWith(null)
 
   it "reports error when removing a document fails for a different reason
  (not 404/not found)", ->
     backend.remove('collection', 'key', writeResponse)
+    whenCallback(fs.exists, 1).thenCallIt(backend, true)
     whenCallback(nStore.new, 1).thenCallIt(backend, undefined)
     whenCallback(collection.remove, 1).thenCallIt(backend, genericError)
     expect(writeResponse).toHaveBeenCalledWith(genericError)
