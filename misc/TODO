@@ -16,13 +16,6 @@ different). Use the "pass explicit null style" everywhere.
 * TODO comments in various files
 
 = Misc =
-* !! Collections might be created on the fly in requests where we would not expect
-  this behaviour. Check that collections are not created on the fly during
-  - update document
-  - delete document
-  - GET /collection/document.
-  - We might allow creating collections on the fly for POST /collection
-    (read: when creating a new document in a formerly not existing collection)
 * Get rid of fixed routing - collection/document to allow backends with a more nesting levels or which are not simple key-value document stores
 * configure routing per yaml? let backend configure routing?
 * Check out warehouse.js and RQL
