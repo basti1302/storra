@@ -8,11 +8,8 @@
 * Rename: backend -> backend connector (or short: connector)
 * Remove code duplication in backends. Especially the two in-memory backends
   have some duplicated code, but mongo also.
-* Remove inconsistency: When calling methods which take an optional parameter
-(for example error) and the caller does not want to pass a value for the
-parameter, it sometimes uses null, sometimes undefined and sometimes gives
-no argument at all (which is equivalent to undefined, but is syntactically
-different). Use the "pass explicit null style" everywhere.
+* Remove inconsistency: When calling methods which take an optional parameter,
+always pass null instead of leaving the parameter out.
 * TODO comments in various files
 
 = Misc =
@@ -21,12 +18,6 @@ different). Use the "pass explicit null style" everywhere.
 * Check out warehouse.js and RQL
 
 = Tests =
-* Leverage dependency injection in unit specs, now that we use wire.js
-* Some specs are slow. WTF?
-  unit:
-    mongodb
-    requesthandling
-
 * Switch from Jasmine to mocha/sinon/chai
 * Performance tests
   - Performance testing with different backends, without network latency, without concurrent requests
