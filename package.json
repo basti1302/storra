@@ -42,7 +42,7 @@
     "grunt-contrib-jshint": "~0.6.0",
     "grunt-coffeelint": "0.0.6",
     "grunt-jasmine-node": "git://github.com/magicmoose/grunt-jasmine-node.git",
-    "grunt-cucumber": "git://github.com/felipecvo/grunt-cucumber-js.git",
+    "grunt-cucumber": "~0.2.3",
     "grunt-contrib-watch": "~0.4.4",
     "request": "~2.21",
     "sandboxed-module": "0.2.x",
