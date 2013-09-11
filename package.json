@@ -38,15 +38,18 @@
     "supervisor": "Using supervisor during development is also highly recommended."
   },
   "devDependencies": {
+    "chai": "~1.7.2",
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.6.0",
     "grunt-coffeelint": "0.0.6",
     "grunt-jasmine-node": "git://github.com/magicmoose/grunt-jasmine-node.git",
     "grunt-cucumber": "~0.2.3",
     "grunt-contrib-watch": "~0.4.4",
+    "grunt-mocha-cli": "~1.1.0",
+    "mocha": "~1.12.1",
     "request": "~2.21",
-    "sandboxed-module": "0.2.x",
-    "step": ">=0.0.5"
+    "step": ">=0.0.5",
+    "sinon-chai": "~2.4.0"
   },
   "bundledDependencies": [
     "dirty",
