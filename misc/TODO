@@ -53,11 +53,12 @@ always pass null instead of leaving the parameter out.
 == Backends ==
 * Add more backends, a whole lot of them, one after another...
   - Caution: For hosted Storra, this is less important. The customer probably does not really care about the backend.
+  - Redis!
+  - LevelDB!
   - MongoDB: Done (well, sort of)
   - HBase
   - CouchDB?
   - Riak?
-  - Redis?
   - Traditional SQL DBs?
     - MySQL
     - sqlite
