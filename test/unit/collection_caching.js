@@ -163,6 +163,6 @@ describe('The collection cache', function() {
     cache.get('1').should.equal(in1)
     expect(cache.get('2')).to.not.exist
     cache.get('3').should.equal(in3)
-    cache.get('4').should.equal(in4)
+    expect(cache.get('4')).to.equal(in4)
   })
 })
