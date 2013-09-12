@@ -49,6 +49,8 @@ always pass null instead of leaving the parameter out.
 * Built-in multi-tenant-capabilities would be cool, maybe, or something like multiple virtual storra servers under one "physical" storra servers (each configured separately) - think shared storra hosting
 * Quota capabilites (think free accounts, cheap accounts, premium accounts)
 * Push capabilities (push stuff to mobile phones when certain data is changed/added)
+* More Hateoas stuff - links between resources, service document etc. ...
+* Offer HTML as media type in addition to JSON? (Hypermedia API)
 
 == Backends ==
 * Add more backends, a whole lot of them, one after another...
