@@ -87,3 +87,8 @@ Usage
 * DELETE /collection/key to delete a document
 
 Non-existing collections are created on the fly when you create a document in them (but not if you GET a non-existing collection or a document in a non-existing collection).
+
+License
+-------
+
+MIT
