@@ -4,7 +4,6 @@
 == Storra Core Features ==
 
 = Basics =
-* Add LICENSE. Which?
 * Rename: backend -> backend connector (or short: connector)
 * Remove code duplication in backends. Especially the two in-memory backends
   have some duplicated code, but mongo also.
