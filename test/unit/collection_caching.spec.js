@@ -20,28 +20,28 @@ describe('The collection cache', function() {
     var collectionIn = {foo: 'bar'}
     cache.put('collection', collectionIn)
     var collectionOut = cache.get('collection')
-    collectionOut.should.equal(collectionIn)
-    collectionOut.foo.should.equal('bar')
+    expect(collectionOut).to.equal(collectionIn)
+    expect(collectionOut.foo).to.equal('bar')
   })
 
   it('increases the cache size after putting', function() {
-    cache.size.should.equal(0)
+    expect(cache.size).to.equal(0)
     cache.put('x', {})
-    cache.size.should.equal(1)
+    expect(cache.size).to.equal(1)
     cache.put('y', {})
-    cache.size.should.equal(2)
+    expect(cache.size).to.equal(2)
     cache.put('z', {})
-    cache.size.should.equal(3)
+    expect(cache.size).to.equal(3)
   })
 
   it('does not increases the cache size when overwriting', function() {
-    cache.size.should.equal(0)
+    expect(cache.size).to.equal(0)
     cache.put('x', {})
-    cache.size.should.equal(1)
+    expect(cache.size).to.equal(1)
     cache.put('x', {})
-    cache.size.should.equal(1)
+    expect(cache.size).to.equal(1)
     cache.put('x', {})
-    cache.size.should.equal(1)
+    expect(cache.size).to.equal(1)
   })
 
   it('removes entries', function() {
@@ -54,22 +54,22 @@ describe('The collection cache', function() {
   it('knows the lru order when putting', function() {
     cache.put('x', {})
     expect(cache.lru.tail.previous.previous).to.not.exist
-    cache.lru.tail.previous.key.should.equal(cache.lru.headVal)
-    cache.lru.tail.key.should.equal('x')
+    expect(cache.lru.tail.previous.key).to.equal(cache.lru.headVal)
+    expect(cache.lru.tail.key).to.equal('x')
 
     cache.put('y', {})
     expect(cache.lru.tail.previous.previous.previous).to.not.exist
-    cache.lru.tail.previous.previous.key.should.equal(cache.lru.headVal)
-    cache.lru.tail.previous.key.should.equal('x')
-    cache.lru.tail.key.should.equal('y')
+    expect(cache.lru.tail.previous.previous.key).to.equal(cache.lru.headVal)
+    expect(cache.lru.tail.previous.key).to.equal('x')
+    expect(cache.lru.tail.key).to.equal('y')
 
     cache.put('z', {})
     expect(cache.lru.tail.previous.previous.previous.previous).to.not.exist
-    cache.lru.tail.previous.previous.previous.key.should.equal(
+    expect(cache.lru.tail.previous.previous.previous.key).to.equal(
       cache.lru.headVal)
-    cache.lru.tail.previous.previous.key.should.equal('x')
-    cache.lru.tail.previous.key.should.equal('y')
-    cache.lru.tail.key.should.equal('z')
+    expect(cache.lru.tail.previous.previous.key).to.equal('x')
+    expect(cache.lru.tail.previous.key).to.equal('y')
+    expect(cache.lru.tail.key).to.equal('z')
   })
 
   it('knows the correct lru order when overwriting', function() {
@@ -78,11 +78,11 @@ describe('The collection cache', function() {
     cache.put('z', {})
     cache.put('y', {})
     expect(cache.lru.tail.previous.previous.previous.previous).to.not.exist
-    cache.lru.tail.previous.previous.previous.key.should.equal(
+    expect(cache.lru.tail.previous.previous.previous.key).to.equal(
       cache.lru.headVal)
-    cache.lru.tail.previous.previous.key.should.equal('x')
-    cache.lru.tail.previous.key.should.equal('z')
-    cache.lru.tail.key.should.equal('y')
+    expect(cache.lru.tail.previous.previous.key).to.equal('x')
+    expect(cache.lru.tail.previous.key).to.equal('z')
+    expect(cache.lru.tail.key).to.equal('y')
   })
 
   it('knows the correct lru order when overwriting the first', function() {
@@ -90,9 +90,9 @@ describe('The collection cache', function() {
     cache.put('y', {})
     cache.put('x', {})
     expect(cache.lru.tail.previous.previous.previous).to.not.exist
-    cache.lru.tail.previous.previous.key.should.equal(cache.lru.headVal)
-    cache.lru.tail.previous.key.should.equal('y')
-    cache.lru.tail.key.should.equal('x')
+    expect(cache.lru.tail.previous.previous.key).to.equal(cache.lru.headVal)
+    expect(cache.lru.tail.previous.key).to.equal('y')
+    expect(cache.lru.tail.key).to.equal('x')
   })
 
   it('knows the correct lru order when overwriting the last', function() {
@@ -100,17 +100,17 @@ describe('The collection cache', function() {
     cache.put('y', {})
     cache.put('y', {})
     expect(cache.lru.tail.previous.previous.previous).to.not.exist
-    cache.lru.tail.previous.previous.key.should.equal(cache.lru.headVal)
-    cache.lru.tail.previous.key.should.equal('x')
-    cache.lru.tail.key.should.equal('y')
+    expect(cache.lru.tail.previous.previous.key).to.equal(cache.lru.headVal)
+    expect(cache.lru.tail.previous.key).to.equal('x')
+    expect(cache.lru.tail.key).to.equal('y')
   })
 
   it('knows the correct lru order when overwriting the only entry', function() {
     cache.put('x', {})
     cache.put('x', {})
     expect(cache.lru.tail.previous.previous).to.not.exist
-    cache.lru.tail.previous.key.should.equal(cache.lru.headVal)
-    cache.lru.tail.key.should.equal('x')
+    expect(cache.lru.tail.previous.key).to.equal(cache.lru.headVal)
+    expect(cache.lru.tail.key).to.equal('x')
   })
 
   it('knows the correct lru order when getting', function() {
@@ -125,11 +125,11 @@ describe('The collection cache', function() {
     cache.get('x')
 
     expect(cache.lru.tail.previous.previous.previous.previous).to.not.exist
-    cache.lru.tail.previous.previous.previous.key.should.equal(
+    expect(cache.lru.tail.previous.previous.previous.key).to.equal(
       cache.lru.headVal)
-    cache.lru.tail.previous.previous.key.should.equal('z')
-    cache.lru.tail.previous.key.should.equal('y')
-    cache.lru.tail.key.should.equal('x')
+    expect(cache.lru.tail.previous.previous.key).to.equal('z')
+    expect(cache.lru.tail.previous.key).to.equal('y')
+    expect(cache.lru.tail.key).to.equal('x')
   })
 
   it('knows the correct lru order when putting, overwriting and getting', function() {
@@ -141,11 +141,11 @@ describe('The collection cache', function() {
     cache.put('z', {})
 
     expect(cache.lru.tail.previous.previous.previous.previous).to.not.exist
-    cache.lru.tail.previous.previous.previous.key.should.equal(
+    expect(cache.lru.tail.previous.previous.previous.key).to.equal(
       cache.lru.headVal)
-    cache.lru.tail.previous.previous.key.should.equal('y')
-    cache.lru.tail.previous.key.should.equal('x')
-    cache.lru.tail.key.should.equal('z')
+    expect(cache.lru.tail.previous.previous.key).to.equal('y')
+    expect(cache.lru.tail.previous.key).to.equal('x')
+    expect(cache.lru.tail.key).to.equal('z')
   })
 
   it('evicts the least recently used collection when the cache limit is hit', function() {
@@ -160,9 +160,9 @@ describe('The collection cache', function() {
     cache.get('1')
     cache.get('3')
     cache.put('4', in4)
-    cache.get('1').should.equal(in1)
+    expect(cache.get('1')).to.equal(in1)
     expect(cache.get('2')).to.not.exist
-    cache.get('3').should.equal(in3)
-    cache.get('4').should.equal(in4)
+    expect(cache.get('3')).to.equal(in3)
+    expect(cache.get('4')).to.equal(in4)
   })
 })
