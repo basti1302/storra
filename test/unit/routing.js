@@ -1,7 +1,8 @@
 var chai = require('chai')
-chai.should()
 var expect = chai.expect
 var sinon = require('sinon')
+var sinonChai = require("sinon-chai");
+chai.use(sinonChai);
 
 describe('router#', function() {
 

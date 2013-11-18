@@ -1,0 +1,5 @@
+# it
+:%s/", ->/', function() {/g
+
+# convert expecte(foo).to... to foo.should....
+:%s/\vexpect\((.*)\).to/\1.should/gc

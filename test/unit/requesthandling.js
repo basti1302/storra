@@ -1,110 +1,132 @@
-describe "The request handler", ->
+var chai = require('chai')
+var expect = chai.expect
+var sinon = require('sinon')
+var sinonChai = require('sinon-chai')
+chai.use(sinonChai)
 
-  backend = null
-  requesthandler = null
-  request = null
-  response = null
-  err404 = new Error("not found")
+describe('The request handler', function() {
+
+  var backend = null
+  var requesthandler = null
+  var request = null
+  var response = null
+  var err404 = new Error("not found")
   err404.httpStatus = 404
 
-  beforeEach ->
-    RequestHandler = require('../../lib/requesthandler')
+  beforeEach(function() {
+    var RequestHandler = require('../../lib/requesthandler')
     requesthandler = new RequestHandler()
 
-    backend = jasmine.createSpyObj('backend', [
-      'init'
-      'list'
-      'removeCollection'
-      'read'
-      'create'
-      'update'
-      'remove'
-    ])
+    backend = {}
+    backend.init = sinon.spy()
+    backend.list = sinon.stub()
+    backend.removeCollection = sinon.spy()
+    backend.read = sinon.spy()
+    backend.create = sinon.spy()
+    backend.update = sinon.spy()
+    backend.remove = sinon.spy()
     requesthandler.backend = backend
 
-    request = jasmine.createSpyObj('request', [
-      'on'
-      'once'
-      'removeAllListeners'
-    ])
+    request = {}
+    request.on = sinon.spy()
+    request.once = sinon.spy()
+    request.removeAllListeners = sinon.spy()
     request.headers = {host: 'localhost'}
-    request.url = "http://localhost:8888"
-    response = jasmine.createSpyObj('response', [
-      'writeHead'
-      'write'
-      'end'
-    ])
+    request.url = 'http://localhost:8888'
 
-  it "responds to root with 400 Bad Request", ->
+    response = {}
+    response.writeHead = sinon.spy()
+    response.write = sinon.spy()
+    response.end = sinon.spy()
+  })
+
+  it('responds to root with 400 Bad Request', function() {
     requesthandler.root(request, response)
-    expectResponse 400
+    expectResponse(400)
     expectContent()
+  })
 
-  it "handles OPTIONS requests", ->
+  it('handles OPTIONS requests', function() {
     requesthandler.options(request, response)
-    expectResponse 200
-    #  OPTIONS response has no body
+    expectResponse(200)
+    // OPTIONS response has no body
     expectNoContent()
+  })
 
-  it "serves a collection of documents", ->
+  it('serves a collection of documents', function(done) {
+    // TODO Strange, if we stub-call both callbacks, the second is not called?
+    // backend.list.callsArgWith(1, [])
+    backend.list.callsArgWithAsync(2, null)
     requesthandler.list(request, response, 'collection')
-    expect(backend.list).toHaveBeenCalledWith 'collection',
-        jasmine.any(Function), jasmine.any(Function)
-    whenCallback(backend.list, 1).thenCallIt(requesthandler, [])
-    whenCallback(backend.list, 2).thenCallIt(requesthandler, null)
-    expectResponse 200
-    expectContent()
 
-  it "says 500 if listing the collection fails", ->
+    waitFor(
+      function() { return response.end.called },
+      function() {
+        expect(backend.list).to.have.been.calledWith('collection',
+          sinon.match.func, sinon.match.func)
+        expectResponse(200)
+        expectContent()
+        done()
+      }
+    )
+  })
+
+  it.only('says 500 if listing the collection fails', function() {
+    backend.list.callsArgWith(2, new Error('test error'))
     requesthandler.list(request, response, 'collection')
-    whenCallback(backend.list, 2).thenCallIt(requesthandler,
-        new Error('test error'))
     expect500()
+  })
 
-  it "removes a collection", ->
+  /*
+  it('removes a collection', function() {
     requesthandler.removeCollection(request, response, 'collection')
     expect(backend.removeCollection).toHaveBeenCalledWith 'collection',
         jasmine.any(Function)
     whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler,
         undefined)
-    expectResponse 204
+    expectResponse(204)
     expectNoContent()
+  })
 
-  it "says 500 if removing a collection fails", ->
+  it('says 500 if removing a collection fails', function() {
     requesthandler.removeCollection(request, response, 'collection')
     expect(backend.removeCollection).toHaveBeenCalledWith 'collection',
         jasmine.any(Function)
     whenCallback(backend.removeCollection, 1).thenCallIt(requesthandler,
         new Error('test error'))
     expect500()
+  })
 
-  it "serves a document", ->
+  it('serves a document', function() {
     requesthandler.retrieve(request, response, 'collection', 'key')
     whenCallback(backend.read, 2).thenCallIt(requesthandler, undefined,
         {foo: 'bar', _id: 'key'}, 'key')
-    expectResponse 200
+    expectResponse(200)
     expectContent('{"foo":"bar","_id":"key"}')
+  })
 
-  it "says 404 if serving a document fails", ->
+  it('says 404 if serving a document fails', function() {
     requesthandler.retrieve(request, response, 'collection', 'key')
     whenCallback(backend.read, 2).thenCallIt(requesthandler, err404, null,
         'key')
     expect404()
+  })
 
-  it "says 500 if serving a document fails for unknown reasons", ->
+  it('says 500 if serving a document fails for unknown reasons', function() {
     requesthandler.retrieve(request, response, 'collection', 'key')
     whenCallback(backend.read, 2).thenCallIt(
       requesthandler, new Error('test error'), {}, 'key')
     expect500()
+  })
 
-  it "creates a document", ->
+  it('creates a document', function() {
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
     expect(backend.create).toHaveBeenCalled()
     whenCallback(backend.create, 2).thenCallIt(requesthandler, undefined, 'key')
-    # We only care about the location header here. But Jasmine is a bit stubborn
-    # and without argument captors, it's not so easy to verify just this one
-    # header.
+    // We only care about the location header here. But Jasmine is a bit stubborn
+    // and without argument captors, it's not so easy to verify just this one
+    // header.
     expectResponseAndHeaders(201, {
       "access-control-allow-origin": "*",
       "access-control-allow-headers": "X-Requested-With,
@@ -117,110 +139,131 @@ describe "The request handler", ->
       "x-storra-entity-key" : "key"
     })
     expectNoContent()
+  })
 
-  it "says 500 if creating a document fails", ->
+  it('says 500 if creating a document fails', function() {
     requesthandler.create(request, response, 'collection')
     stubCreateUpdate()
     whenCallback(backend.create, 2).thenCallIt(
       requesthandler, new Error('test error'), 'key')
     expect500()
+  })
 
-  it "updates a document", ->
+  it('updates a document', function() {
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
     expect(backend.update).toHaveBeenCalled()
     whenCallback(backend.update, 3).thenCallIt(requesthandler, undefined)
-    expectResponse 204
+    expectResponse(204)
     expectNoContent()
+  })
 
-  it "says 404 if the document is not found during update", ->
+  it('says 404 if the document is not found during update', function() {
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
     whenCallback(backend.update, 3).thenCallIt(requesthandler, err404)
     expect404()
+  })
 
-  it "says 500 if updating a document fails", ->
+  it('says 500 if updating a document fails', function() {
     requesthandler.update(request, response, 'collection', 'key')
     stubCreateUpdate()
     whenCallback(backend.update, 3).thenCallIt(
       requesthandler, new Error('test error'))
     expect500()
+  })
 
-  it "deletes a document", ->
+  it('deletes a document', function() {
     requesthandler.remove(request, response, 'collection', 'key')
     whenCallback(backend.remove, 2).thenCallIt(requesthandler, undefined)
-    expectResponse 204
+    expectResponse(204)
     expectNoContent()
+  })
 
-  it "says 500 if deleting  a document fails", ->
+  it('says 500 if deleting  a document fails', function() {
     requesthandler.remove(request, response, 'collection', 'key')
     whenCallback(backend.remove, 2).thenCallIt(
       requesthandler, new Error('test error'))
     expect500()
+  })
 
-  it "handles bad requests", ->
+  it('handles bad requests', function() {
     requesthandler.badRequest(response, "some very informational text")
-    expectResponse 400
+    expectResponse(400)
     expectContent('I\'m unable to process this request. I\'m terribly sorry.',
         '\nAdditional info: some very informational text')
+  })
 
-  it "handles not found errors", ->
+  it('handles not found errors', function() {
     requesthandler.notFound(response)
     expect404()
+  })
 
-  it "handles internal server errors", ->
+  it('handles internal server errors', function() {
     requesthandler.internalServerError(response)
     expect500()
+  })
 
-  it "handles unimplemented methods", ->
+  it('handles unimplemented methods', function() {
     requesthandler.notImplemented(response)
-    expectResponse 501
+    expectResponse(501)
     expectNoContent()
+  })
 
-  getCallback = (spy, callbackIndex) ->
-    if (!spy.mostRecentCall || !spy.mostRecentCall.args)
-      throw new Error('Spy has not received any calls yet.')
-    else
-      return spy.mostRecentCall.args[callbackIndex]
+  */
 
-  whenCallback = (spy, callbackIndex) ->
-    callback = getCallback(spy, callbackIndex)
-    if (!callback || typeof callback != 'function')
-      throw new Error('Not a callback: ' + JSON.stringify(callback))
-    ret =
-      thenCallIt: (callOn, args...) ->
-        callback.call(callOn, args...)
-    return ret
+  expectResponse = function(status) {
+    response.writeHead.should.have.been.calledWith(status, sinon.match.object)
+  }
 
-  expectResponse = (status) ->
-    expect(response.writeHead).toHaveBeenCalledWith(status, jasmine.any(Object))
-
+  /*
   expectResponseAndHeaders = (status, headers) ->
     expect(response.writeHead).toHaveBeenCalledWith(status, headers)
+  */
 
-  expectContent = (content...) ->
-    if content and content.length > 0
-      for string in content
-        expect(response.write).toHaveBeenCalledWith(string)
-    else
-      expect(response.write).toHaveBeenCalled()
-    expect(response.end).toHaveBeenCalled()
+  expectContent = function() {
+    if (arguments.length > 0) {
+      for (var string in arguments) {
+        response.write.should.have.been.calledWith(string)
+      }
+    } else {
+      response.write.should.have.been.called
+    }
+    response.end.should.have.been.called
+  }
 
-  expectNoContent = () ->
-    expect(response.write).not.toHaveBeenCalled()
-    expect(response.end).toHaveBeenCalled()
+  expectNoContent = function() {
+    response.write.should.not.have.been.called
+    response.end.should.have.been.called
+  }
 
-  expect404 = () ->
-    expectResponse 404
+  expect404 = function() {
+    expectResponse(404)
     expectContent('The requested resource was not found. ')
+  }
 
-  expect500 = () ->
-    expectResponse 500
+  expect500 = function() {
+    expectResponse(500)
     expectContent('Oops, something went wrong.')
+  }
 
+  /*
   stubCreateUpdate = () ->
     requestReaderOnData = request.on.calls[0].args[1]
     requestReaderOnEnd = request.once.calls[0].args[1]
     requestReaderOnData.call(requesthandler, '{"foo":"bar"}')
     requestReaderOnEnd.call(requesthandler)
+  */
 
+  waitFor = function(test, onSuccess, polling) {
+    if (polling == null || polling == undefined) {
+      polling = 10
+    }
+    var handle = setInterval(function() {
+      clearInterval(handle)
+      if (test()) {
+        onSuccess()
+      }
+    }, polling)
+  }
+})
