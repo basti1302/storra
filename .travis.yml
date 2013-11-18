@@ -14,5 +14,5 @@ before_script:
   - npm install -g grunt-cli
 
 branches:
-  only:
-    - master
+  except:
+    - mocha
